@@ -1,0 +1,263 @@
+<?php
+
+use App\Http\Middleware\CheckInstallation;
+use App\Http\Middleware\CheckPlanAccess;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\Category;
+use App\Models\ProcessedProduct;
+use App\Models\Product;
+use App\Models\Unit;
+use App\Models\User;
+use Spatie\Permission\Models\Permission;
+
+beforeEach(function () {
+    $this->withoutMiddleware([CheckInstallation::class, CheckPlanAccess::class, HandleInertiaRequests::class]);
+    $this->company = User::factory()->create(['type' => 'company']);
+    $this->company->givePermissionTo([
+        Permission::findOrCreate('view-products', 'web'),
+        Permission::findOrCreate('create-products', 'web'),
+    ]);
+    $this->actingAs($this->company);
+
+    $this->category = Category::create([
+        'created_by' => $this->company->id,
+        'name' => 'Processed goods',
+        'status' => 'active',
+    ]);
+    $this->unit = Unit::create([
+        'created_by' => $this->company->id,
+        'name' => 'Piece',
+        'short_name' => 'pc',
+        'status' => 'active',
+    ]);
+});
+
+function processedProductPayload(array $items, array $overrides = []): array
+{
+    return array_replace_recursive([
+        'output_mode' => 'new',
+        'output_product_id' => '',
+        'produced_quantity' => 3,
+        'processed_date' => now()->toDateString(),
+        'notes' => '',
+        'product' => [
+            'name' => 'Processed item',
+            'sku' => 'PROC-001',
+            'category_id' => 1,
+            'unit_id' => 1,
+            'purchase_price' => 2.50,
+            'selling_price' => 5.00,
+            'min_stock_level' => 0,
+            'image' => '',
+        ],
+        'items' => $items,
+    ], $overrides);
+}
+
+test('creating a processed product deducts inputs and creates the output inventory', function () {
+    $input = Product::create([
+        'created_by' => $this->company->id,
+        'name' => 'Raw material',
+        'sku' => 'RAW-001',
+        'category_id' => $this->category->id,
+        'unit_id' => $this->unit->id,
+        'stock_quantity' => 8,
+        'status' => 'active',
+    ]);
+
+    $response = $this->post(route('processed-products.store'), processedProductPayload([
+        ['product_id' => $input->id, 'quantity' => 4],
+    ], [
+        'product' => [
+            'category_id' => $this->category->id,
+            'unit_id' => $this->unit->id,
+            'image' => 'https://example.test/storage/products/processed-item.png',
+        ],
+    ]));
+
+    $response->assertSessionHasNoErrors()
+        ->assertRedirect(route('processed-products.index'));
+
+    $this->assertSame(4, $input->fresh()->stock_quantity);
+    $this->assertDatabaseHas('products', [
+        'created_by' => $this->company->id,
+        'name' => 'Processed item',
+        'stock_quantity' => 3,
+        'image' => '/storage/products/processed-item.png',
+    ]);
+    $this->assertDatabaseHas('processed_products', [
+        'created_by' => $this->company->id,
+        'produced_quantity' => 3,
+    ]);
+    $this->assertDatabaseHas('processed_product_items', [
+        'processed_product_id' => ProcessedProduct::firstOrFail()->id,
+        'product_id' => $input->id,
+        'quantity' => 4,
+    ]);
+});
+
+test('processing can add output quantity to an existing product', function () {
+    $input = Product::create([
+        'created_by' => $this->company->id,
+        'name' => 'Raw material',
+        'sku' => 'RAW-002',
+        'category_id' => $this->category->id,
+        'unit_id' => $this->unit->id,
+        'stock_quantity' => 8,
+        'status' => 'active',
+    ]);
+    $output = Product::create([
+        'created_by' => $this->company->id,
+        'name' => 'Existing output',
+        'sku' => 'OUT-001',
+        'category_id' => $this->category->id,
+        'unit_id' => $this->unit->id,
+        'stock_quantity' => 5,
+        'status' => 'active',
+    ]);
+
+    $response = $this->post(route('processed-products.store'), processedProductPayload([
+        ['product_id' => $input->id, 'quantity' => 2],
+    ], [
+        'output_mode' => 'existing',
+        'output_product_id' => $output->id,
+    ]));
+
+    $response->assertSessionHasNoErrors()
+        ->assertRedirect(route('processed-products.index'));
+
+    $this->assertSame(6, $input->fresh()->stock_quantity);
+    $this->assertSame(8, $output->fresh()->stock_quantity);
+    $this->assertDatabaseHas('processed_products', [
+        'output_product_id' => $output->id,
+        'produced_quantity' => 3,
+    ]);
+    $this->assertDatabaseCount('products', 2);
+});
+
+test('insufficient input stock does not create a product or change inventory', function () {
+    $input = Product::create([
+        'created_by' => $this->company->id,
+        'name' => 'Low stock material',
+        'sku' => 'RAW-003',
+        'category_id' => $this->category->id,
+        'unit_id' => $this->unit->id,
+        'stock_quantity' => 1,
+        'status' => 'active',
+    ]);
+
+    $response = $this->post(route('processed-products.store'), processedProductPayload([
+        ['product_id' => $input->id, 'quantity' => 2],
+    ], [
+        'product' => [
+            'category_id' => $this->category->id,
+            'unit_id' => $this->unit->id,
+        ],
+    ]));
+
+    $response->assertSessionHasErrors('items.0.quantity');
+    $this->assertSame(1, $input->fresh()->stock_quantity);
+    $this->assertDatabaseCount('products', 1);
+    $this->assertDatabaseCount('processed_products', 0);
+});
+
+test('processed product list reports counts for distinct output products', function () {
+    $outputs = [
+        ['name' => 'Out of stock output', 'sku' => 'OUT-101', 'status' => 'active', 'stock_quantity' => 0, 'min_stock_level' => 2],
+        ['name' => 'Low stock output', 'sku' => 'OUT-102', 'status' => 'active', 'stock_quantity' => 2, 'min_stock_level' => 5],
+        ['name' => 'Inactive output', 'sku' => 'OUT-103', 'status' => 'inactive', 'stock_quantity' => 10, 'min_stock_level' => 2],
+    ];
+
+    foreach ($outputs as $attributes) {
+        $output = Product::create(array_merge([
+            'created_by' => $this->company->id,
+            'category_id' => $this->category->id,
+            'unit_id' => $this->unit->id,
+        ], $attributes));
+
+        ProcessedProduct::create([
+            'created_by' => $this->company->id,
+            'output_product_id' => $output->id,
+            'produced_quantity' => 1,
+            'processed_date' => now()->toDateString(),
+        ]);
+    }
+
+    $response = $this->withHeaders(['X-Inertia' => 'true'])
+        ->get(route('processed-products.index'));
+
+    $response->assertOk()
+        ->assertJsonPath('props.productStats.totalProducts', 3)
+        ->assertJsonPath('props.productStats.activeProducts', 2)
+        ->assertJsonPath('props.productStats.inactiveProducts', 1)
+        ->assertJsonPath('props.productStats.outOfStock', 1)
+        ->assertJsonPath('props.productStats.lowStock', 1);
+});
+
+test('processed product filters search output and input products without bypassing status', function () {
+    $activeOutput = Product::create([
+        'created_by' => $this->company->id,
+        'name' => 'Active finished good',
+        'sku' => 'FIN-201',
+        'category_id' => $this->category->id,
+        'unit_id' => $this->unit->id,
+        'stock_quantity' => 5,
+        'status' => 'active',
+    ]);
+    $inactiveOutput = Product::create([
+        'created_by' => $this->company->id,
+        'name' => 'Inactive finished good',
+        'sku' => 'FIN-202',
+        'category_id' => $this->category->id,
+        'unit_id' => $this->unit->id,
+        'stock_quantity' => 5,
+        'status' => 'inactive',
+    ]);
+    $input = Product::create([
+        'created_by' => $this->company->id,
+        'name' => 'Searchable ingredient',
+        'sku' => 'ING-201',
+        'category_id' => $this->category->id,
+        'unit_id' => $this->unit->id,
+        'stock_quantity' => 5,
+        'status' => 'active',
+    ]);
+    $otherCategory = Category::create([
+        'created_by' => $this->company->id,
+        'name' => 'Other category',
+        'status' => 'active',
+    ]);
+    $otherCategoryOutput = Product::create([
+        'created_by' => $this->company->id,
+        'name' => 'Other category finished good',
+        'sku' => 'FIN-203',
+        'category_id' => $otherCategory->id,
+        'unit_id' => $this->unit->id,
+        'stock_quantity' => 5,
+        'status' => 'active',
+    ]);
+
+    foreach ([$activeOutput, $inactiveOutput, $otherCategoryOutput] as $output) {
+        $processed = ProcessedProduct::create([
+            'created_by' => $this->company->id,
+            'output_product_id' => $output->id,
+            'produced_quantity' => 1,
+            'processed_date' => now()->toDateString(),
+        ]);
+        $processed->items()->create(['product_id' => $input->id, 'quantity' => 1]);
+    }
+
+    $response = $this->withHeaders(['X-Inertia' => 'true'])
+        ->get(route('processed-products.index', [
+            'search' => 'Searchable',
+            'status' => 'active',
+            'category' => $this->category->id,
+        ]));
+
+    $response->assertOk()
+        ->assertJsonPath('props.processedProducts.total', 1)
+        ->assertJsonPath('props.processedProducts.data.0.output_product.name', 'Active finished good')
+        ->assertJsonPath('props.statusCounts.all', 2)
+        ->assertJsonPath('props.statusCounts.active', 1)
+        ->assertJsonPath('props.statusCounts.inactive', 1);
+});

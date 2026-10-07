@@ -511,6 +511,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/products/{product}', [\App\Http\Controllers\ProductController::class, 'show'])->name('products.show');
         });
 
+        // Processed Product Management routes
+        Route::middleware(['auth', 'permission:view-products'])->group(function () {
+            Route::get('/processed-products', [\App\Http\Controllers\ProcessedProductController::class, 'index'])->name('processed-products.index');
+            Route::get('/processed-products/export', [\App\Http\Controllers\ProcessedProductController::class, 'export'])->name('processed-products.export')->middleware('permission:export-products');
+            Route::get('/processed-products/create', [\App\Http\Controllers\ProcessedProductController::class, 'create'])->name('processed-products.create')->middleware('permission:create-products');
+            Route::post('/processed-products', [\App\Http\Controllers\ProcessedProductController::class, 'store'])->name('processed-products.store')->middleware('permission:create-products');
+        });
+
         // Barcode Print routes
         Route::middleware(['auth', 'permission:view-products'])->group(function () {
             Route::get('/barcode-print', [\App\Http\Controllers\BarcodePrintController::class, 'index'])->name('barcode-print.index');
@@ -726,6 +734,4 @@ Route::post('cookie/consent', [\App\Http\Controllers\CookieConsentController::cl
 Route::middleware(['auth', 'verified', 'plan.access'])->group(function () {
     Route::get('cookie/consent/download', [\App\Http\Controllers\CookieConsentController::class, 'download'])->name('cookie.consent.download');
 });
-
-
 

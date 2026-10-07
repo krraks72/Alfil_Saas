@@ -7,7 +7,7 @@ import { useSidebarSettings } from '@/contexts/SidebarContext';
 import { useBrand } from '@/contexts/BrandContext';
 import { type NavItem } from '@/types';
 import { Link, usePage, router } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, ShoppingBag, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar as CalendarIcon, CreditCard, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, ChevronDown, Building2, Globe, Calculator, Receipt, Search, X, ChevronRight, LogOut, TicketPercent } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, ShoppingBag, Package, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar as CalendarIcon, CreditCard, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, ChevronDown, Building2, Globe, Calculator, Receipt, Search, X, ChevronRight, LogOut, TicketPercent } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import AppLogo from './app-logo';
@@ -321,6 +321,10 @@ export function AppSidebar() {
             productChildren.push({
                 title: t('Products'),
                 href: route('products.index')
+            });
+            productChildren.push({
+                title: t('Processed Products'),
+                href: route('processed-products.index')
             });
         }
         if (hasPermission(permissions, 'view-products')) {

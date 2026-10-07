@@ -1,0 +1,114 @@
+/* Typography Utilities */
+
+/* Font Loading Optimization */
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Instrument Sans'), local('InstrumentSans-Regular');
+}
+
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: local('Instrument Sans Medium'), local('InstrumentSans-Medium');
+}
+
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Instrument Sans SemiBold'), local('InstrumentSans-SemiBold');
+}
+
+/* Typography Scale */
+.text-xs { font-size: 0.75rem; line-height: 1.5; }
+.text-sm { font-size: 0.875rem; line-height: 1.5; }
+.text-base { font-size: 1rem; line-height: 1.6; }
+.text-lg { font-size: 1.125rem; line-height: 1.6; }
+.text-xl { font-size: 1.25rem; line-height: 1.5; }
+.text-2xl { font-size: 1.5rem; line-height: 1.4; }
+.text-3xl { font-size: 1.875rem; line-height: 1.3; }
+.text-4xl { font-size: 2.25rem; line-height: 1.2; }
+
+/* Line Height Utilities */
+.leading-none { line-height: 1; }
+.leading-tight { line-height: 1.25; }
+.leading-snug { line-height: 1.375; }
+.leading-normal { line-height: 1.5; }
+.leading-relaxed { line-height: 1.625; }
+.leading-loose { line-height: 2; }
+
+/* Letter Spacing */
+.tracking-tighter { letter-spacing: -0.05em; }
+.tracking-tight { letter-spacing: -0.025em; }
+.tracking-normal { letter-spacing: 0; }
+.tracking-wide { letter-spacing: 0.025em; }
+.tracking-wider { letter-spacing: 0.05em; }
+
+/* Text Rendering Optimization */
+.text-render-optimized {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+}
+
+/* RTL Typography Support */
+html[dir="rtl"] .text-left { text-align: right !important; }
+html[dir="rtl"] .text-right { text-align: left !important; }
+html[dir="rtl"] .text-start { text-align: right !important; }
+html[dir="rtl"] .text-end { text-align: left !important; }
+
+html[dir="ltr"] .text-left { text-align: left !important; }
+html[dir="ltr"] .text-right { text-align: right !important; }
+html[dir="ltr"] .text-start { text-align: left !important; }
+html[dir="ltr"] .text-end { text-align: right !important; }
+
+/* Responsive Typography */
+@media (max-width: 640px) {
+  .text-responsive-xl { font-size: 1.125rem; }
+  .text-responsive-2xl { font-size: 1.25rem; }
+  .text-responsive-3xl { font-size: 1.5rem; }
+  .text-responsive-4xl { font-size: 1.875rem; }
+}
+
+@media (min-width: 641px) {
+  .text-responsive-xl { font-size: 1.25rem; }
+  .text-responsive-2xl { font-size: 1.5rem; }
+  .text-responsive-3xl { font-size: 1.875rem; }
+  .text-responsive-4xl { font-size: 2.25rem; }
+}
+
+/* Fix for common typography issues */
+.typography-fix {
+  font-variant-ligatures: common-ligatures;
+  font-kerning: normal;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Ensure consistent font weights */
+.font-light { font-weight: 300; }
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+/* Fix for input and form typography */
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* Dark mode typography adjustments */
+.dark {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

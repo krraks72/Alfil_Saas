@@ -1,0 +1,93 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Plan;
+use Illuminate\Http\Request;
+
+class FlutterwavePaymentController extends Controller
+{
+    public function processPayment(Request $request)
+    {        
+        // Normalize request data to handle both camelCase and snake_case
+        $request->merge([
+            'plan_id' => $request->input('plan_id') ?: $request->input('planId'),
+            'billing_cycle' => $request->input('billing_cycle') ?: $request->input('billingCycle'),
+            'coupon_code' => $request->input('coupon_code') ?: $request->input('couponCode'),
+        ]);
+                
+        try {
+            $validated = validatePaymentRequest($request, [
+                'payment_id' => 'required|integer',
+                'tx_ref' => 'required|string',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        }
+        
+
+        try {
+            $plan = Plan::findOrFail($validated['plan_id']);
+            $settings = getPaymentGatewaySettings();
+                        
+            if (!isset($settings['payment_settings']['flutterwave_secret_key'])) {
+                return back()->withErrors(['error' => __('Flutterwave not configured')]);
+            }
+
+            // Verify payment with Flutterwave API
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => "https://api.flutterwave.com/v3/transactions/" . $validated['payment_id'] . "/verify",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "Authorization: Bearer " . $settings['payment_settings']['flutterwave_secret_key'],
+                    "Content-Type: application/json",
+                ],
+            ));
+
+            $response = curl_exec($curl);
+            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            curl_close($curl);
+            
+            if ($httpCode !== 200) {
+                return back()->withErrors(['error' => __('Payment verification failed - API error')]);
+            }
+
+            $result = json_decode($response, true);
+            
+            if (!$result) {
+                return back()->withErrors(['error' => __('Payment verification failed - Invalid response')]);
+            }
+            
+            if ($result['status'] === 'success' && $result['data']['status'] === 'successful') {
+                // Check if payment amount matches plan price
+                $expectedAmount = $plan->getPriceForCycle($validated['billing_cycle']);
+                $paidAmount = $result['data']['amount'];
+                                
+                if (abs($paidAmount - $expectedAmount) > 0.01) {
+                    return back()->withErrors(['error' => __('Payment amount verification failed')]);
+                }
+                
+                try {
+                    $planOrder = processPaymentSuccess([
+                        'user_id' => auth()->id(),
+                        'plan_id' => $plan->id,
+                        'billing_cycle' => $validated['billing_cycle'],
+                        'payment_method' => 'flutterwave',
+                        'coupon_code' => $validated['coupon_code'] ?? null,
+                        'payment_id' => $validated['payment_id'],
+                    ]);
+                                        
+                    return redirect()->route('plans.index')->with('success', __('Payment successful! Your plan has been activated.'));
+                } catch (\Exception $subscriptionError) {
+                    return back()->withErrors(['error' => __('Payment successful but subscription failed. Please contact support.')]);
+                }
+            }
+            
+            return back()->withErrors(['error' => __('Payment verification failed')]);
+
+        } catch (\Exception $e) {
+            return handlePaymentError($e, 'flutterwave');
+        }
+    }
+}

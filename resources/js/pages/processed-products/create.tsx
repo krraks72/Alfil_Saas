@@ -206,7 +206,22 @@ export default function CreateProcessedProduct() {
                                         </div>
                                         <div className="space-y-1.5">
                                             <Label required>{t('SKU')}</Label>
-                                            <Input value={data.product.sku} onChange={(event) => updateProduct('sku', event.target.value)} />
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    value={data.product.sku}
+                                                    onChange={(event) => updateProduct('sku', event.target.value)}
+                                                    placeholder={t('Enter SKU')}
+                                                    className="flex-1"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="default"
+                                                    className="shrink-0"
+                                                    onClick={() => updateProduct('sku', `SKU-${Date.now()}`)}
+                                                >
+                                                    {t('Generate')}
+                                                </Button>
+                                            </div>
                                             <InputError message={formErrors['product.sku']} />
                                         </div>
                                         <div className="space-y-1.5">

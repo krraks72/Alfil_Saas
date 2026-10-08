@@ -1,6 +1,6 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import TextStyle from '@tiptap/extension-text-style'
+import { TextStyle } from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
 import TextAlign from '@tiptap/extension-text-align'
 import Link from '@tiptap/extension-link'
@@ -131,7 +131,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>(({
   const toggleHtmlView = () => {
     if (showHtml) {
       // Switch back to editor view
-      editor?.commands.setContent(htmlContent, false)
+      editor?.commands.setContent(htmlContent, { emitUpdate: false })
       onChange?.(htmlContent)
       setShowHtml(false)
     } else {

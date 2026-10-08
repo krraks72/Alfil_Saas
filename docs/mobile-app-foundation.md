@@ -8,6 +8,12 @@ owner through `created_by`. The current sales flow is a point-of-sale workflow:
 sales require a branch, cash register, and customer. Customer records do not
 currently have login credentials.
 
+Processed-product records describe production batches; their output is a regular
+`products` row with the produced stock quantity. Inventory, POS, sales, and the
+mobile storefront use that same product row, so processed outputs follow the
+same catalog, pricing, and stock-decrement behavior without a second sellable
+product type.
+
 ## Store branches, catalog, and order requests
 
 The versioned API provides these public, rate-limited storefront endpoints:

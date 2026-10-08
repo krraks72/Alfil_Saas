@@ -3,11 +3,15 @@
 use App\Http\Middleware\CheckInstallation;
 use App\Http\Middleware\CheckPlanAccess;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\Branch;
+use App\Models\CashRegister;
 use App\Models\Category;
+use App\Models\Customer;
 use App\Models\ProcessedProduct;
 use App\Models\Product;
 use App\Models\Unit;
 use App\Models\User;
+use Illuminate\Support\Facades\Config;
 use Spatie\Permission\Models\Permission;
 
 beforeEach(function () {
@@ -16,6 +20,8 @@ beforeEach(function () {
     $this->company->givePermissionTo([
         Permission::findOrCreate('view-products', 'web'),
         Permission::findOrCreate('create-products', 'web'),
+        Permission::findOrCreate('view-pos', 'web'),
+        Permission::findOrCreate('create-sales', 'web'),
     ]);
     $this->actingAs($this->company);
 
@@ -260,4 +266,101 @@ test('processed product filters search output and input products without bypassi
         ->assertJsonPath('props.statusCounts.all', 2)
         ->assertJsonPath('props.statusCounts.active', 1)
         ->assertJsonPath('props.statusCounts.inactive', 1);
+});
+
+test('processed output is available through inventory POS and storefront sales flows', function () {
+    Config::set('app.mobile_store_owner_id', $this->company->id);
+
+    $input = Product::create([
+        'created_by' => $this->company->id,
+        'name' => 'Raw flour',
+        'sku' => 'RAW-FLOUR-001',
+        'category_id' => $this->category->id,
+        'unit_id' => $this->unit->id,
+        'stock_quantity' => 10,
+        'status' => 'active',
+    ]);
+
+    $this->post(route('processed-products.store'), processedProductPayload([
+        ['product_id' => $input->id, 'quantity' => 4],
+    ], [
+        'product' => [
+            'name' => 'Finished bread',
+            'sku' => 'BREAD-001',
+            'category_id' => $this->category->id,
+            'unit_id' => $this->unit->id,
+            'selling_price' => 12.50,
+        ],
+    ]))
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('processed-products.index'));
+
+    $finishedProduct = Product::where('sku', 'BREAD-001')->firstOrFail();
+    $branch = Branch::create([
+        'created_by' => $this->company->id,
+        'name' => 'Main branch',
+        'address' => '1 Main Street',
+        'status' => 'active',
+    ]);
+    $cashRegister = CashRegister::create([
+        'created_by' => $this->company->id,
+        'branch_id' => $branch->id,
+        'name' => 'Main register',
+        'register_code' => 'REG-MAIN-001',
+        'status' => 'active',
+    ]);
+    $customer = Customer::create([
+        'created_by' => $this->company->id,
+        'name' => 'Walk-in customer',
+        'status' => 'active',
+    ]);
+
+    $this->withHeaders(['X-Inertia' => 'true'])
+        ->get(route('products.index', ['search' => 'Finished bread']))
+        ->assertOk()
+        ->assertJsonPath('props.products.data.0.id', $finishedProduct->id);
+
+    $this->withHeaders(['X-Inertia' => 'true'])
+        ->get(route('pos.index', ['search' => 'Finished bread']))
+        ->assertOk()
+        ->assertJsonPath('props.products.0.id', $finishedProduct->id);
+
+    $this->getJson(route('pos.products'))
+        ->assertOk()
+        ->assertJsonFragment([
+            'id' => $finishedProduct->id,
+            'name' => 'Finished bread',
+        ]);
+
+    $this->getJson('/api/v1/store/products?branch_id='.$branch->id)
+        ->assertOk()
+        ->assertJsonFragment([
+            'id' => $finishedProduct->id,
+            'name' => 'Finished bread',
+            'price' => '12.50',
+        ]);
+
+    $this->from(route('pos.index'))
+        ->post(route('pos.sales.store'), [
+            'customer_id' => $customer->id,
+            'cash_register_id' => $cashRegister->id,
+            'items' => [
+                [
+                    'product_id' => $finishedProduct->id,
+                    'quantity' => 2,
+                    'unit_price' => 12.50,
+                ],
+            ],
+            'payment_method' => 'cash',
+        ])
+        ->assertRedirect(route('pos.index'))
+        ->assertSessionHas('success');
+
+    $this->assertSame(1, $finishedProduct->fresh()->stock_quantity);
+    $this->assertDatabaseHas('sale_items', [
+        'product_id' => $finishedProduct->id,
+        'product_name' => 'Finished bread',
+        'quantity' => 2,
+    ]);
+    $this->assertSame(6, $input->fresh()->stock_quantity);
 });

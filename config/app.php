@@ -66,6 +66,8 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    'mobile_store_owner_id' => env('MOBILE_STORE_OWNER_ID'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

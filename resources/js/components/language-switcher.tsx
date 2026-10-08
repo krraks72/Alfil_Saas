@@ -72,10 +72,10 @@ export const LanguageSwitcher: React.FC = () => {
     );
 
     React.useEffect(() => {
-        if (userLanguage && i18n.language !== userLanguage) {
+        if (auth?.user && userLanguage && i18n.language !== userLanguage) {
             i18n.changeLanguage(userLanguage);
         }
-    }, [userLanguage, i18n]);
+    }, [auth?.user, userLanguage, i18n]);
 
     const isAuthenticated = auth?.user;
     const userRoles = auth?.user?.roles?.map((role: any) => role.name) || [];
@@ -92,6 +92,10 @@ const isSuperAdmin = isAuthenticated && (hasRole('superadmin', userRoles) || use
         const lang = availableLanguages.find((l: Language) => l.code === languageCode);
         if (lang) {
             try {
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem('app_language_preference', languageCode);
+                }
+
                 await i18n.changeLanguage(languageCode);
 
                 const isRtl = rtlLanguages.includes(languageCode);

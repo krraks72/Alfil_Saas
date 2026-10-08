@@ -41,6 +41,11 @@ const customBackend = {
 
 // Function to get initial language with improved detection
 const getInitialLanguage = () => {
+  const savedPreference = window.localStorage?.getItem('app_language_preference');
+  if (savedPreference) {
+    return savedPreference;
+  }
+
   // First priority: Get from server-provided userLanguage
   if (window.userLanguage) {
     return window.userLanguage;

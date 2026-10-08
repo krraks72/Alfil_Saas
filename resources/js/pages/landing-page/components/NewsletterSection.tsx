@@ -59,10 +59,10 @@ export default function NewsletterSection({ flash, settings, sectionData, brandC
           </div>
           
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {sectionData?.title || t('Stay Updated with POS System')}
+            {sectionData?.title ? t(sectionData.title) : t('Stay Updated with POS System')}
           </h2>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed font-medium" id="newsletter-description">
-            {sectionData?.subtitle || t('Get the latest updates, retail management tips, and exclusive features delivered straight to your inbox. Join our community of professionals.')}
+            {sectionData?.subtitle ? t(sectionData.subtitle) : t('Get the latest updates, retail management tips, and exclusive features delivered straight to your inbox. Join our community of professionals.')}
           </p>
 
 
@@ -79,7 +79,7 @@ export default function NewsletterSection({ flash, settings, sectionData, brandC
                   style={{ '--tw-ring-color': brandColor } as React.CSSProperties}
                   required
                   disabled={processing}
-                  aria-label="Email address for newsletter subscription"
+                  aria-label={t('Email address for newsletter subscription')}
                   aria-describedby="newsletter-description"
                 />
                 {errors.email && (
@@ -91,7 +91,7 @@ export default function NewsletterSection({ flash, settings, sectionData, brandC
                 disabled={processing}
                 className="text-white px-8 py-3 rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[120px]"
                 style={{ backgroundColor: brandColor }}
-                aria-label={processing ? 'Subscribing to newsletter' : 'Subscribe to newsletter'}
+                aria-label={processing ? t('Subscribing to newsletter') : t('Subscribe to newsletter')}
               >
                 {processing && (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -102,7 +102,7 @@ export default function NewsletterSection({ flash, settings, sectionData, brandC
           </form>
 
           <p className="text-gray-500 text-sm mt-4">
-            {sectionData?.privacy_text}
+            {sectionData?.privacy_text ? t(sectionData.privacy_text) : null}
           </p>
 
           {/* Benefits */}
@@ -113,8 +113,8 @@ export default function NewsletterSection({ flash, settings, sectionData, brandC
                   <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-gray-700 text-xl">{benefit.icon}</span>
                   </div>
-                  <h3 className="text-gray-900 font-semibold mb-2">{benefit.title}</h3>
-                  <p className="text-gray-600 text-sm">{benefit.description}</p>
+                  <h3 className="text-gray-900 font-semibold mb-2">{t(benefit.title)}</h3>
+                  <p className="text-gray-600 text-sm">{t(benefit.description)}</p>
                 </div>
               ))}
             </div>

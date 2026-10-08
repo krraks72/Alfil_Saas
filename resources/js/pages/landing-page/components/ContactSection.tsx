@@ -75,10 +75,10 @@ export default function ContactSection({ flash, settings, sectionData, brandColo
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 sm:mb-12 lg:mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {sectionData?.title || t('Get in Touch')}
+            {sectionData?.title ? t(sectionData.title) : t('Get in Touch')}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed font-medium">
-            {sectionData?.subtitle || t('Have questions about our POS system? We\'d love to hear from you.')}
+            {sectionData?.subtitle ? t(sectionData.subtitle) : t('Have questions about our POS system? We\'d love to hear from you.')}
           </p>
         </div>
 
@@ -87,16 +87,16 @@ export default function ContactSection({ flash, settings, sectionData, brandColo
           <div>
             <div className="bg-white border border-gray-200 rounded-xl p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                {sectionData?.form_title || t('Send us a Message')}
+                {sectionData?.form_title ? t(sectionData.form_title) : t('Send us a Message')}
               </h3>
 
 
 
-              <form onSubmit={handleSubmit} className="space-y-6" role="form" aria-label="Contact form">
+              <form onSubmit={handleSubmit} className="space-y-6" role="form" aria-label={t('Contact form')}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('Full Name')} <span className="text-red-500" aria-label="required">*</span>
+                      {t('Full Name')} <span className="text-red-500" aria-label={t('required')}>*</span>
                     </label>
                     <input
                       type="text"
@@ -115,7 +115,7 @@ export default function ContactSection({ flash, settings, sectionData, brandColo
                   </div>
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('Email Address')} <span className="text-red-500" aria-label="required">*</span>
+                      {t('Email Address')} <span className="text-red-500" aria-label={t('required')}>*</span>
                     </label>
                     <input
                       type="email"
@@ -136,7 +136,7 @@ export default function ContactSection({ flash, settings, sectionData, brandColo
 
                 <div>
                   <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('Subject')} <span className="text-red-500" aria-label="required">*</span>
+                    {t('Subject')} <span className="text-red-500" aria-label={t('required')}>*</span>
                   </label>
                   <input
                     type="text"
@@ -156,7 +156,7 @@ export default function ContactSection({ flash, settings, sectionData, brandColo
 
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('Message')} <span className="text-red-500" aria-label="required">*</span>
+                    {t('Message')} <span className="text-red-500" aria-label={t('required')}>*</span>
                   </label>
                   <textarea
                     id="message"
@@ -179,7 +179,7 @@ export default function ContactSection({ flash, settings, sectionData, brandColo
                   disabled={processing}
                   className="w-full text-white px-8 py-4 rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   style={{ backgroundColor: brandColor }}
-                  aria-label={processing ? 'Sending message' : 'Send contact message'}
+                  aria-label={processing ? t('Sending message') : t('Send contact message')}
                 >
                   {processing ? (
                     <>
@@ -202,10 +202,10 @@ export default function ContactSection({ flash, settings, sectionData, brandColo
             <div className="space-y-8">
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                  {sectionData?.info_title || t('Contact Information')}
+                  {sectionData?.info_title ? t(sectionData.info_title) : t('Contact Information')}
                 </h3>
                 <p className="text-gray-600 mb-8">
-                  {sectionData?.info_description || t('We\'re here to help and answer any question you might have.')}
+                  {sectionData?.info_description ? t(sectionData.info_description) : t('We\'re here to help and answer any question you might have.')}
                 </p>
               </div>
 
@@ -243,10 +243,10 @@ export default function ContactSection({ flash, settings, sectionData, brandColo
                     {sectionData.faqs.map((faq, index) => (
                       <div key={index}>
                         <h5 className="font-medium text-gray-900 mb-1">
-                          {faq.question}
+                          {t(faq.question)}
                         </h5>
                         <p className="text-gray-600 text-sm">
-                          {faq.answer}
+                          {t(faq.answer)}
                         </p>
                       </div>
                     ))}

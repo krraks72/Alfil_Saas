@@ -73,10 +73,10 @@ export default function TeamSection({ settings, sectionData, brandColor = '#10b7
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 sm:mb-12 lg:mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {sectionData?.title || t('Meet Our Team')}
+            {sectionData?.title ? t(sectionData.title) : t('Meet Our Team')}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed font-medium">
-            {sectionData?.subtitle || t('We\'re a diverse team of innovators and problem-solvers.')}
+            {sectionData?.subtitle ? t(sectionData.subtitle) : t('We\'re a diverse team of innovators and problem-solvers.')}
           </p>
         </div>
 
@@ -96,10 +96,10 @@ export default function TeamSection({ settings, sectionData, brandColor = '#10b7
                   {member.name}
                 </h3>
                 <p className="text-gray-700 font-medium mb-3">
-                  {member.role}
+                  {t(member.role)}
                 </p>
                 <p className="text-gray-600 text-sm leading-relaxed mb-4">
-                  {member.bio}
+                  {t(member.bio)}
                 </p>
 
                 {/* Social Links */}
@@ -139,13 +139,13 @@ export default function TeamSection({ settings, sectionData, brandColor = '#10b7
           <div className="text-center mt-8 sm:mt-12 lg:mt-16">
             <div className="bg-gray-50 rounded-xl p-8 border border-gray-200 max-w-2xl mx-auto">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                {sectionData?.cta_title || t('Want to Join Our Team?')}
+                {sectionData?.cta_title ? t(sectionData.cta_title) : t('Want to Join Our Team?')}
               </h3>
               <p className="text-gray-600 mb-6">
-                {sectionData?.cta_description || t('We\'re always looking for talented individuals.')}
+                {sectionData?.cta_description ? t(sectionData.cta_description) : t('We\'re always looking for talented individuals.')}
               </p>
               <button className="text-white px-8 py-3 rounded-lg transition-colors font-semibold" style={{ backgroundColor: brandColor }}>
-                {sectionData?.cta_button_text || t('View Open Positions')}
+                {sectionData?.cta_button_text ? t(sectionData.cta_button_text) : t('View Open Positions')}
               </button>
             </div>
           </div>

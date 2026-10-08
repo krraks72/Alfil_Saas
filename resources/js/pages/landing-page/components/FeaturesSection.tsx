@@ -100,15 +100,15 @@ export default function FeaturesSection({ settings, sectionData, brandColor = '#
         aria-labelledby={`feature-${index}-title`}
       >
         {showIcons && (
-          <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-6" style={{ backgroundColor: `${brandColor}15` }} role="img" aria-label={`${feature.title} icon`}>
+          <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-6" style={{ backgroundColor: `${brandColor}15` }} role="img" aria-label={`${t(feature.title)} ${t('icon')}`}>
             <IconComponent className="w-6 h-6" style={{ color: brandColor }} aria-hidden="true" />
           </div>
         )}
         <h3 className="text-xl font-bold text-gray-900 mb-4" id={`feature-${index}-title`}>
-          {feature.title}
+          {t(feature.title)}
         </h3>
         <p className="text-gray-600 leading-relaxed">
-          {feature.description}
+          {t(feature.description)}
         </p>
       </div>
     );
@@ -130,10 +130,10 @@ export default function FeaturesSection({ settings, sectionData, brandColor = '#
         )}
         <div>
           <h3 className="text-lg font-bold text-gray-900 mb-2" id={`feature-${index}-title`}>
-            {feature.title}
+            {t(feature.title)}
           </h3>
           <p className="text-gray-600 leading-relaxed">
-            {feature.description}
+            {t(feature.description)}
           </p>
         </div>
       </div>
@@ -157,10 +157,10 @@ export default function FeaturesSection({ settings, sectionData, brandColor = '#
         )}
         <div className={!isEven ? 'md:text-right' : ''}>
           <h3 className="text-xl font-bold text-gray-900 mb-2" id={`feature-${index}-title`}>
-            {feature.title}
+            {t(feature.title)}
           </h3>
           <p className="text-gray-600 leading-relaxed">
-            {feature.description}
+            {t(feature.description)}
           </p>
         </div>
       </div>
@@ -172,16 +172,16 @@ export default function FeaturesSection({ settings, sectionData, brandColor = '#
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`text-center mb-8 sm:mb-12 lg:mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {sectionData.title || t('Powerful Features for Modern Retail')}
+            {sectionData.title ? t(sectionData.title) : t('Powerful Features for Modern Retail')}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed font-medium">
-            {sectionData.description || t('Everything you need to manage sales, inventory, and customer relationships.')}
+            {sectionData.description ? t(sectionData.description) : t('Everything you need to manage sales, inventory, and customer relationships.')}
           </p>
         </div>
 
         {sectionImage && (
           <div className="mb-8 sm:mb-12 text-center">
-            <img src={sectionImage} alt="Features" className="max-w-full h-auto rounded-xl shadow-lg mx-auto" />
+            <img src={sectionImage} alt={t('Features')} className="max-w-full h-auto rounded-xl shadow-lg mx-auto" />
           </div>
         )}
         

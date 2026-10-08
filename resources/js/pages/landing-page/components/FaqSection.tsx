@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { usePage } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 
 interface Faq {
   id: number;
@@ -25,6 +26,7 @@ interface FaqSectionProps {
 }
 
 export default function FaqSection({ faqs, settings, sectionData, brandColor = '#3b82f6' }: FaqSectionProps) {
+  const { t } = useTranslation();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [, forceUpdate] = React.useReducer(x => x + 1, 0);
   const { props } = usePage();
@@ -72,43 +74,43 @@ export default function FaqSection({ faqs, settings, sectionData, brandColor = '
   const defaultFaqs = [
     {
       id: 1,
-      question: 'What is a legal case management system?',
-      answer: 'A legal case management system is a comprehensive software solution that helps law firms and legal professionals organize, track, and manage their cases, clients, documents, deadlines, and billing in one centralized platform.'
+      question: t('What is a legal case management system?'),
+      answer: t('A legal case management system is a comprehensive software solution that helps law firms and legal professionals organize, track, and manage their cases, clients, documents, deadlines, and billing in one centralized platform.')
     },
     {
       id: 2,
-      question: 'Is client data secure and confidential?',
-      answer: 'Yes, we use bank-level encryption and security measures to protect all client data. Our system is designed with attorney-client privilege in mind, ensuring complete confidentiality and compliance with legal industry standards.'
+      question: t('Is client data secure and confidential?'),
+      answer: t('Yes, we use bank-level encryption and security measures to protect all client data. Our system is designed with attorney-client privilege in mind, ensuring complete confidentiality and compliance with legal industry standards.')
     },
     {
       id: 3,
-      question: 'Can multiple team members collaborate on cases?',
-      answer: 'Absolutely! Our system supports team collaboration with role-based permissions. You can assign team members to cases, share documents securely, and track everyone\'s contributions while maintaining proper access controls.'
+      question: t('Can multiple team members collaborate on cases?'),
+      answer: t('Absolutely! Our system supports team collaboration with role-based permissions. You can assign team members to cases, share documents securely, and track everyone\'s contributions while maintaining proper access controls.')
     },
     {
       id: 4,
-      question: 'How does time tracking and billing work?',
-      answer: 'Our integrated time tracking allows you to log billable hours directly within cases and tasks. The system automatically generates invoices based on your time entries and billing rates, streamlining your billing process.'
+      question: t('How does time tracking and billing work?'),
+      answer: t('Our integrated time tracking allows you to log billable hours directly within cases and tasks. The system automatically generates invoices based on your time entries and billing rates, streamlining your billing process.')
     },
     {
       id: 5,
-      question: 'Can I manage court schedules and deadlines?',
-      answer: 'Yes, our calendar system helps you track court dates, filing deadlines, and important case milestones. You\'ll receive automated reminders to ensure you never miss critical dates.'
+      question: t('Can I manage court schedules and deadlines?'),
+      answer: t('Yes, our calendar system helps you track court dates, filing deadlines, and important case milestones. You\'ll receive automated reminders to ensure you never miss critical dates.')
     },
     {
       id: 6,
-      question: 'What types of documents can I store and manage?',
-      answer: 'You can store all types of legal documents including contracts, pleadings, evidence, correspondence, and research materials. Our document management system supports version control and secure sharing.'
+      question: t('What types of documents can I store and manage?'),
+      answer: t('You can store all types of legal documents including contracts, pleadings, evidence, correspondence, and research materials. Our document management system supports version control and secure sharing.')
     },
     {
       id: 7,
-      question: 'Is there a mobile app available?',
-      answer: 'Yes, our responsive web application works seamlessly on mobile devices, allowing you to access case information, update time entries, and communicate with clients from anywhere.'
+      question: t('Is there a mobile app available?'),
+      answer: t('Yes, our responsive web application works seamlessly on mobile devices, allowing you to access case information, update time entries, and communicate with clients from anywhere.')
     },
     {
       id: 8,
-      question: 'How do I get started?',
-      answer: 'Getting started is easy! Simply sign up for an account, set up your firm profile, and begin adding your cases and clients. Our intuitive interface requires no technical expertise to use effectively.'
+      question: t('How do I get started?'),
+      answer: t('Getting started is easy! Simply sign up for an account, set up your firm profile, and begin adding your cases and clients. Our intuitive interface requires no technical expertise to use effectively.')
     }
   ];
 
@@ -128,10 +130,10 @@ export default function FaqSection({ faqs, settings, sectionData, brandColor = '
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 sm:mb-12 lg:mb-16">
           <h2 className={`text-3xl md:text-4xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>
-            {sectionData?.title || 'Frequently Asked Questions'}
+            {sectionData?.title ? t(sectionData.title) : t('Frequently Asked Questions')}
           </h2>
           <p className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-600'} leading-relaxed font-medium`}>
-            {sectionData?.subtitle || 'Got questions? We\'ve got answers. If you can\'t find what you\'re looking for, feel free to contact our support team.'}
+            {sectionData?.subtitle ? t(sectionData.subtitle) : t("Got questions? We've got answers. If you can't find what you're looking for, feel free to contact our support team.")}
           </p>
         </div>
 
@@ -162,7 +164,7 @@ export default function FaqSection({ faqs, settings, sectionData, brandColor = '
                 aria-describedby={`faq-question-${faq.id}`}
               >
                 <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} pr-4`} id={`faq-question-${faq.id}`}>
-                  {faq.question}
+                  {t(faq.question)}
                 </h3>
                 {openFaq === faq.id ? (
                   <ChevronUp className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'} flex-shrink-0`} aria-hidden="true" />
@@ -180,7 +182,7 @@ export default function FaqSection({ faqs, settings, sectionData, brandColor = '
                   aria-labelledby={`faq-question-${faq.id}`}
                 >
                   <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} leading-relaxed pt-4`}>
-                    {faq.answer}
+                    {t(faq.answer)}
                   </p>
                 </div>
               )}
@@ -191,7 +193,7 @@ export default function FaqSection({ faqs, settings, sectionData, brandColor = '
         {(sectionData?.cta_text || sectionData?.button_text) && (
           <div className="text-center mt-8 sm:mt-12">
             <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} mb-4`}>
-              {sectionData?.cta_text || 'Still have questions?'}
+              {sectionData?.cta_text ? t(sectionData.cta_text) : t('Still have questions?')}
             </p>
             <a
               href="#contact"
@@ -206,7 +208,7 @@ export default function FaqSection({ faqs, settings, sectionData, brandColor = '
                 e.currentTarget.style.color = 'white';
               }}
             >
-              {sectionData?.button_text || 'Contact Support'}
+              {sectionData?.button_text ? t(sectionData.button_text) : t('Contact Support')}
             </a>
           </div>
         )}

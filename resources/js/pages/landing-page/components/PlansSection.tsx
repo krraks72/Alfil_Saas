@@ -170,10 +170,10 @@ function PlansSection({ plans, settings, sectionData, brandColor = '#10b77f' }: 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`text-center mb-8 sm:mb-12 lg:mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h2 className={`text-3xl md:text-4xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>
-            {sectionData?.title || t('Choose Your Plan')}
+            {sectionData?.title ? t(sectionData.title) : t('Choose Your Plan')}
           </h2>
           <p className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto mb-8 leading-relaxed font-medium`}>
-            {sectionData?.subtitle || t('Start with our free plan and upgrade as you grow. All plans include our core features with no setup fees or hidden costs.')}
+            {sectionData?.subtitle ? t(sectionData.subtitle) : t('Start with our free plan and upgrade as you grow. All plans include our core features with no setup fees or hidden costs.')}
           </p>
 
           {/* Billing Toggle */}
@@ -228,7 +228,7 @@ function PlansSection({ plans, settings, sectionData, brandColor = '#10b77f' }: 
                 {/* Card Header */}
                 <div className={`p-6 text-center border-b ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
                   <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    {plan.name}
+                    {t(plan.name)}
                   </h3>
 
                   {/* Pricing */}
@@ -251,7 +251,7 @@ function PlansSection({ plans, settings, sectionData, brandColor = '#10b77f' }: 
 
                   {/* Description */}
                   <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {plan.description}
+                    {t(plan.description)}
                   </p>
                 </div>
 
@@ -298,7 +298,7 @@ function PlansSection({ plans, settings, sectionData, brandColor = '#10b77f' }: 
                             >
                               <Check className="h-3 w-3" />
                             </div>
-                            <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{feature}</span>
+                            <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t(feature)}</span>
                           </li>
                         ))}
                       </ul>
@@ -343,7 +343,7 @@ function PlansSection({ plans, settings, sectionData, brandColor = '#10b77f' }: 
         {sectionData?.faq_text && (
           <div className="text-center mt-8 sm:mt-12">
             <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>
-              {sectionData.faq_text}
+              {t(sectionData.faq_text)}
             </p>
           </div>
         )}

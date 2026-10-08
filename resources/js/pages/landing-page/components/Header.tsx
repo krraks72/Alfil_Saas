@@ -5,6 +5,7 @@ import { useSaasMode } from '@/hooks/useSaasMode';
 import { useTranslation } from 'react-i18next';
 import { useBrand } from '@/contexts/BrandContext';
 import { useAppearance } from '@/hooks/use-appearance';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 interface CustomPage {
   id: number;
@@ -40,8 +41,17 @@ export default function Header({ settings, sectionData, customPages = [], brandC
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const shortPageLabels: Record<string, string> = {
+    'about-us': 'Navigation: About',
+    'privacy-policy': 'Navigation: Privacy',
+    'terms-of-service': 'Navigation: Terms',
+    'contact-us': 'Navigation: Contact',
+    faq: 'Navigation: Help',
+    'refund-policy': 'Navigation: Refunds'
+  };
+
   const menuItems = customPages.map(page => ({
-    name: page.title,
+    name: t(shortPageLabels[page.slug] || page.title),
     href: route('custom-page.show', page.slug)
   }));
 
@@ -108,10 +118,10 @@ export default function Header({ settings, sectionData, customPages = [], brandC
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8" role="navigation" aria-label="Main navigation">
+          <nav className="hidden xl:flex flex-1 items-center justify-center gap-3" role="navigation" aria-label={t('Main navigation')}>
             <Link
               href={route('home')}
-              className="text-sm font-medium transition-colors relative group"
+              className="whitespace-nowrap text-[13px] font-medium transition-colors relative group"
               style={{ color: textColor }}
               onMouseEnter={(e) => e.currentTarget.style.color = brandColor}
               onMouseLeave={(e) => e.currentTarget.style.color = textColor}
@@ -127,7 +137,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm font-medium transition-colors relative group"
+                className="whitespace-nowrap text-[13px] font-medium transition-colors relative group"
                 style={{ color: textColor }}
                 onMouseEnter={(e) => e.currentTarget.style.color = brandColor}
                 onMouseLeave={(e) => e.currentTarget.style.color = textColor}
@@ -143,61 +153,65 @@ export default function Header({ settings, sectionData, customPages = [], brandC
           </nav>
 
           {/* Auth Buttons */}
-          <div className="hidden lg:flex items-center gap-4">
-            {auth?.user ? (
-              <Link
-                href={route('dashboard')}
-                className="px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors border"
-                style={getButtonStyle(true)}
-                onMouseEnter={(e) => Object.assign(e.currentTarget.style, getButtonHoverStyle(true, true))}
-                onMouseLeave={(e) => Object.assign(e.currentTarget.style, getButtonHoverStyle(true, false))}
-              >
-                {t('Dashboard')}
-              </Link>
-            ) : (
-              <>
+          <div className="flex items-center gap-3">
+            <div className="hidden xl:flex items-center gap-4">
+              {auth?.user ? (
                 <Link
-                  href={route('login')}
-                  className="text-sm font-medium transition-colors"
-                  style={{ color: textColor }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = brandColor}
-                  onMouseLeave={(e) => e.currentTarget.style.color = textColor}
+                  href={route('dashboard')}
+                  className="px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors border"
+                  style={getButtonStyle(true)}
+                  onMouseEnter={(e) => Object.assign(e.currentTarget.style, getButtonHoverStyle(true, true))}
+                  onMouseLeave={(e) => Object.assign(e.currentTarget.style, getButtonHoverStyle(true, false))}
                 >
-                  {t('Login')}
+                  {t('Dashboard')}
                 </Link>
-                {globalSettings.registrationEnabled === '1' && (
+              ) : (
+                <>
                   <Link
-                    href={route('register')}
-                    className="px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors border"
-                    style={getButtonStyle(true)}
-                    onMouseEnter={(e) => Object.assign(e.currentTarget.style, getButtonHoverStyle(true, true))}
-                    onMouseLeave={(e) => Object.assign(e.currentTarget.style, getButtonHoverStyle(true, false))}
+                    href={route('login')}
+                    className="text-sm font-medium transition-colors"
+                    style={{ color: textColor }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = brandColor}
+                    onMouseLeave={(e) => e.currentTarget.style.color = textColor}
                   >
-                    {t('Get Started')}
+                    {t('Navigation: Sign in')}
                   </Link>
-                )}
-              </>
-            )}
-          </div>
+                  {globalSettings.registrationEnabled === '1' && (
+                    <Link
+                      href={route('register')}
+                      className="px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors border"
+                      style={getButtonStyle(true)}
+                      onMouseEnter={(e) => Object.assign(e.currentTarget.style, getButtonHoverStyle(true, true))}
+                      onMouseLeave={(e) => Object.assign(e.currentTarget.style, getButtonHoverStyle(true, false))}
+                    >
+                      {t('Get Started')}
+                    </Link>
+                  )}
+                </>
+              )}
+            </div>
 
-          {/* Mobile menu button */}
-          <div className="lg:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              style={{ color: textColor }}
-              aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-              aria-expanded={isMenuOpen}
-              aria-controls="mobile-menu"
-            >
-              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
+            <LanguageSwitcher />
+
+            {/* Mobile menu button */}
+            <div className="xl:hidden">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                style={{ color: textColor }}
+                aria-label={isMenuOpen ? t('Close navigation menu') : t('Open navigation menu')}
+                aria-expanded={isMenuOpen}
+                aria-controls="mobile-menu"
+              >
+                {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200" id="mobile-menu">
+          <div className="xl:hidden border-t border-gray-200" id="mobile-menu">
             <div
               className="px-4 py-6 space-y-4"
               style={isTransparent ? { backgroundColor: 'white' } : { backgroundColor }}
@@ -247,7 +261,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                       onMouseLeave={(e) => e.currentTarget.style.color = textColor}
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      {t('Login')}
+                      {t('Navigation: Sign in')}
                     </Link>
                     {globalSettings.registrationEnabled === '1' && (
                       <Link

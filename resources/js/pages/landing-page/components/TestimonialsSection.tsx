@@ -1,6 +1,7 @@
 import React from 'react';
 import { Star, Quote } from 'lucide-react';
 import { useScrollAnimation } from '../../../hooks/useScrollAnimation';
+import { useTranslation } from 'react-i18next';
 
 interface Testimonial {
   id: number;
@@ -37,6 +38,7 @@ interface TestimonialsSectionProps {
 
 export default function TestimonialsSection({ testimonials, settings, sectionData, brandColor = '#10b77f' }: TestimonialsSectionProps) {
   const { ref, isVisible } = useScrollAnimation();
+  const { t } = useTranslation();
   // Fallback testimonials if none provided
   const defaultTestimonials = sectionData?.default_testimonials?.map((testimonial, index) => ({
     id: index + 1,
@@ -45,9 +47,9 @@ export default function TestimonialsSection({ testimonials, settings, sectionDat
     {
       id: 1,
       name: 'Alex Thompson',
-      role: 'Store Manager',
+      role: t('Store Manager'),
       company: 'RetailCorp Inc.',
-      content: 'This POS system has revolutionized how we manage sales.',
+      content: t('This POS system has revolutionized how we manage sales.'),
       rating: 5
     }
   ];
@@ -71,10 +73,10 @@ export default function TestimonialsSection({ testimonials, settings, sectionDat
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`text-center mb-8 sm:mb-12 lg:mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {sectionData?.title || 'What Our Clients Say'}
+            {sectionData?.title ? t(sectionData.title) : t('What Our Clients Say')}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed font-medium">
-            {sectionData?.subtitle || "Don't just take our word for it."}
+            {sectionData?.subtitle ? t(sectionData.subtitle) : t("Don't just take our word for it.")}
           </p>
         </div>
 
@@ -98,7 +100,7 @@ export default function TestimonialsSection({ testimonials, settings, sectionDat
 
               {/* Testimonial Content */}
               <p className="text-gray-700 mb-6 leading-relaxed">
-                "{testimonial.content}"
+                "{t(testimonial.content)}"
               </p>
 
               {/* Author Info */}
@@ -121,7 +123,7 @@ export default function TestimonialsSection({ testimonials, settings, sectionDat
                     {testimonial.name}
                   </h4>
                   <p className="text-sm text-gray-600">
-                    {testimonial.role}
+                    {t(testimonial.role)}
                     {testimonial.company && (
                       <span className="text-gray-400"> • {testimonial.company}</span>
                     )}
@@ -137,13 +139,13 @@ export default function TestimonialsSection({ testimonials, settings, sectionDat
           <div className="mt-8 sm:mt-12 lg:mt-16 text-center">
             <div className="bg-white rounded-xl p-8 border border-gray-200">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                {sectionData?.trust_title || 'Trusted by Retailers Worldwide'}
+                {sectionData?.trust_title ? t(sectionData.trust_title) : t('Trusted by Retailers Worldwide')}
               </h3>
               <div className="flex justify-center items-center gap-8 flex-wrap">
                 {sectionData.trust_stats.map((stat, index) => (
                   <div key={index} className="text-center">
                     <div className="text-3xl font-bold text-gray-900">{stat.value}</div>
-                    <div className="text-gray-600">{stat.label}</div>
+                    <div className="text-gray-600">{t(stat.label)}</div>
                   </div>
                 ))}
               </div>

@@ -85,10 +85,10 @@ export default function ScreenshotsSection({ brandColor = '#10b77f', settings, s
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`text-center mb-8 sm:mb-12 lg:mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {sectionData?.title || t('See POS System in Action')}
+            {sectionData?.title ? t(sectionData.title) : t('See POS System in Action')}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed font-medium">
-            {sectionData?.subtitle || t('Explore our intuitive interface and powerful features designed to streamline your retail operations.')}
+            {sectionData?.subtitle ? t(sectionData.subtitle) : t('Explore our intuitive interface and powerful features designed to streamline your retail operations.')}
           </p>
         </div>
 
@@ -103,7 +103,7 @@ export default function ScreenshotsSection({ brandColor = '#10b77f', settings, s
                   {screenshot.src ? (
                     <img
                       src={screenshot.src}
-                      alt={screenshot.alt}
+                      alt={t(screenshot.alt)}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                       onError={(e) => {
@@ -118,10 +118,10 @@ export default function ScreenshotsSection({ brandColor = '#10b77f', settings, s
                 </div>
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {screenshot.title}
+                    {t(screenshot.title)}
                   </h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
-                    {screenshot.description}
+                    {t(screenshot.description)}
                   </p>
                 </div>
               </div>

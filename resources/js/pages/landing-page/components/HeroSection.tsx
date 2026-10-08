@@ -121,16 +121,16 @@ export default function HeroSection({ settings, sectionData, brandColor = '#3b82
       {sectionData.announcement_text && (
         <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'}`}
           style={{ color: textColor }}>
-          {sectionData.announcement_text}
+          {t(sectionData.announcement_text)}
         </div>
       )}
 
-      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight" style={{ color: textColor }} role="banner" aria-label="Main heading">
-        {sectionData.title || t('POS Purchase and Sales Management Tool')}
+      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight" style={{ color: textColor }} role="banner" aria-label={t('Main heading')}>
+        {sectionData.title ? t(sectionData.title) : t('POS Purchase and Sales Management Tool')}
       </h1>
 
       <p className="text-lg md:text-xl leading-relaxed max-w-2xl font-medium" style={{ color: subtitleColor }}>
-        {sectionData.subtitle || t('Transform your retail operations with our comprehensive point-of-sale system.')}
+        {sectionData.subtitle ? t(sectionData.subtitle) : t('Transform your retail operations with our comprehensive point-of-sale system.')}
       </p>
 
       <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 ${isCentered || isFullWidth ? 'justify-center' : 'justify-center lg:justify-start'}`}>
@@ -147,9 +147,9 @@ export default function HeroSection({ settings, sectionData, brandColor = '#3b82
               e.currentTarget.style.backgroundColor = brandColor;
               e.currentTarget.style.color = 'white';
             }}
-            aria-label="Start free trial - Register for POS System"
+            aria-label={t('Start free trial - Register for POS System')}
           >
-            {sectionData.primary_button_text || t('Start Free Trial')}
+            {sectionData.primary_button_text ? t(sectionData.primary_button_text) : t('Start Free Trial')}
             <ArrowRight size={18} />
           </Link>
         )}
@@ -157,10 +157,10 @@ export default function HeroSection({ settings, sectionData, brandColor = '#3b82
           href={route('login')}
           className={`border px-8 py-4 rounded-lg transition-colors font-semibold text-base flex items-center justify-center gap-2 ${isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-50'}`}
           style={{ borderColor: brandColor, color: brandColor }}
-          aria-label="Login to existing POS account"
+          aria-label={t('Login to existing POS account')}
         >
           <Play size={18} />
-          {sectionData.secondary_button_text || t('Login')}
+          {sectionData.secondary_button_text ? t(sectionData.secondary_button_text) : t('Login')}
         </Link>
       </div>
 
@@ -171,7 +171,7 @@ export default function HeroSection({ settings, sectionData, brandColor = '#3b82
               <div className="text-3xl md:text-4xl font-bold" style={{ color: textColor }}>
                 {stat.value}
               </div>
-              <div className="font-medium text-sm" style={{ color: subtitleColor }}>{stat.label}</div>
+              <div className="font-medium text-sm" style={{ color: subtitleColor }}>{t(stat.label)}</div>
             </div>
           ))}
         </div>
@@ -185,7 +185,7 @@ export default function HeroSection({ settings, sectionData, brandColor = '#3b82
         <div className="relative">
           <img
             src={heroImage}
-            alt="Hero"
+            alt={t('Hero image')}
             className="w-full h-auto rounded-2xl shadow-xl"
           />
         </div>
@@ -208,7 +208,7 @@ export default function HeroSection({ settings, sectionData, brandColor = '#3b82
                 {sectionData.card?.name || t('John Doe')}
               </h3>
               <p className={`font-semibold ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
-                {sectionData.card?.title || t('Senior Developer')}
+                {sectionData.card?.title ? t(sectionData.card.title) : t('Senior Developer')}
               </p>
               <p className={isDark ? 'text-gray-400' : 'text-gray-500'}>
                 {sectionData.card?.company || t('Tech Solutions Inc.')}

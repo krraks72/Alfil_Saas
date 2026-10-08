@@ -79,8 +79,10 @@ createInertiaApp({
             }
 
             const userLanguage = pageProps?.props?.userLanguage;
+            const isAuthenticated = !!pageProps?.props?.auth?.user;
+            const hasSavedLanguagePreference = !!localStorage.getItem('app_language_preference');
             
-            if (userLanguage) {
+            if (userLanguage && (isAuthenticated || !hasSavedLanguagePreference)) {
                 // Only force LTR for dashboard pages, allow RTL for landing/auth pages
                 if (isDashboardPage()) {
                     document.documentElement.dir = 'ltr';

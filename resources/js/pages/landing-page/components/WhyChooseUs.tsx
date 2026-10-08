@@ -75,10 +75,10 @@ export default function WhyChooseUs({ settings, sectionData, brandColor = '#10b7
           {/* Left Content */}
           <div className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              {sectionData.title || t('Why Choose Our POS System?')}
+              {sectionData.title ? t(sectionData.title) : t('Why Choose Our POS System?')}
             </h2>
             <p className="text-lg text-gray-600 mb-8 leading-relaxed font-medium">
-              {sectionData.subtitle || t('We\'re not just another point-of-sale platform.')}
+              {sectionData.subtitle ? t(sectionData.subtitle) : t('We\'re not just another point-of-sale platform.')}
             </p>
 
             <div className="space-y-4 sm:space-y-6">
@@ -91,10 +91,10 @@ export default function WhyChooseUs({ settings, sectionData, brandColor = '#10b7
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        {reason.title}
+                        {t(reason.title)}
                       </h3>
                       <p className="text-gray-600">
-                        {reason.description}
+                        {t(reason.description)}
                       </p>
                     </div>
                   </div>
@@ -107,10 +107,10 @@ export default function WhyChooseUs({ settings, sectionData, brandColor = '#10b7
           <div className={`bg-gray-50 rounded-xl p-8 border border-gray-200 transition-all duration-700 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
             <div className="text-center mb-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                {sectionData.stats_title || t('Trusted by Retailers Worldwide')}
+                {sectionData.stats_title ? t(sectionData.stats_title) : t('Trusted by Retailers Worldwide')}
               </h3>
               <p className="text-gray-600">
-                {sectionData.stats_subtitle || t('Join the growing community of retailers')}
+                {sectionData.stats_subtitle ? t(sectionData.stats_subtitle) : t('Join the growing community of retailers')}
               </p>
             </div>
 
@@ -118,15 +118,15 @@ export default function WhyChooseUs({ settings, sectionData, brandColor = '#10b7
               {stats.map((stat, index) => (
                 <div key={index} className="text-center p-6 bg-white rounded-lg border border-gray-200">
                   <div className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</div>
-                  <div className="text-gray-600 font-medium">{stat.label}</div>
+                  <div className="text-gray-600 font-medium">{t(stat.label)}</div>
                 </div>
               ))}
             </div>
 
             {(sectionData.cta_title || sectionData.cta_subtitle) && (
               <div className="mt-8 p-6 rounded-lg text-white text-center" style={{ backgroundColor: brandColor }}>
-                <div className="text-xl font-bold mb-2">{sectionData.cta_title || t('Ready to get started?')}</div>
-                <div className="text-gray-300">{sectionData.cta_subtitle || t('Join thousands of satisfied users today')}</div>
+                <div className="text-xl font-bold mb-2">{sectionData.cta_title ? t(sectionData.cta_title) : t('Ready to get started?')}</div>
+                <div className="text-gray-300">{sectionData.cta_subtitle ? t(sectionData.cta_subtitle) : t('Join thousands of satisfied users today')}</div>
               </div>
             )}
           </div>

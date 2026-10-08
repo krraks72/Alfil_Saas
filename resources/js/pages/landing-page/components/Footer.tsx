@@ -125,7 +125,9 @@ export default function Footer({ flash, settings, sectionData = {}, brandColor =
                 />
               </Link>
               <p className="text-gray-400 mb-8 leading-relaxed">
-                {sectionData.description || t('Transforming professional networking with innovative digital business cards. Connect, share, and grow your network effortlessly.')}
+                {sectionData.description
+                  ? t(sectionData.description)
+                  : t('Run your retail business with one POS platform to manage sales, inventory, and customers.')}
               </p>
 
               {/* Contact Info */}
@@ -147,7 +149,7 @@ export default function Footer({ flash, settings, sectionData = {}, brandColor =
 
             {/* Product Links */}
             <div>
-              <h3 className="text-white font-semibold mb-4">{sectionData.section_titles?.product || t('Product')}</h3>
+              <h3 className="text-white font-semibold mb-4">{t(sectionData.section_titles?.product || 'Product')}</h3>
               <ul className="space-y-3">
                 {(footerLinks.product || []).map((link) => (
                   <li key={link.name}>
@@ -155,7 +157,7 @@ export default function Footer({ flash, settings, sectionData = {}, brandColor =
                       href={link.href}
                       className="text-gray-400 hover:text-white transition-colors text-sm"
                     >
-                      {link.name}
+                      {t(link.name)}
                     </a>
                   </li>
                 ))}
@@ -164,7 +166,7 @@ export default function Footer({ flash, settings, sectionData = {}, brandColor =
 
             {/* Company Links */}
             <div>
-              <h3 className="text-white font-semibold mb-4">{sectionData.section_titles?.company || t('Company')}</h3>
+              <h3 className="text-white font-semibold mb-4">{t(sectionData.section_titles?.company || 'Company')}</h3>
               <ul className="space-y-3">
                 {(footerLinks.company || []).map((link) => (
                   <li key={link.name}>
@@ -172,7 +174,7 @@ export default function Footer({ flash, settings, sectionData = {}, brandColor =
                       href={link.href}
                       className="text-gray-400 hover:text-white transition-colors text-sm"
                     >
-                      {link.name}
+                      {t(link.name)}
                     </a>
                   </li>
                 ))}
@@ -181,7 +183,7 @@ export default function Footer({ flash, settings, sectionData = {}, brandColor =
 
             {/* Support Links */}
             <div>
-              <h3 className="text-white font-semibold mb-4">{sectionData.section_titles?.support || t('Support')}</h3>
+              <h3 className="text-white font-semibold mb-4">{t(sectionData.section_titles?.support || 'Support')}</h3>
               <ul className="space-y-3">
                 {(footerLinks.support || []).map((link) => (
                   <li key={link.name}>
@@ -189,7 +191,7 @@ export default function Footer({ flash, settings, sectionData = {}, brandColor =
                       href={link.href}
                       className="text-gray-400 hover:text-white transition-colors text-sm"
                     >
-                      {link.name}
+                      {t(link.name)}
                     </a>
                   </li>
                 ))}
@@ -198,7 +200,7 @@ export default function Footer({ flash, settings, sectionData = {}, brandColor =
 
             {/* Legal Links */}
             <div>
-              <h3 className="text-white font-semibold mb-4">{sectionData.section_titles?.legal || t('Legal')}</h3>
+              <h3 className="text-white font-semibold mb-4">{t(sectionData.section_titles?.legal || 'Legal')}</h3>
               <ul className="space-y-3">
                 {(footerLinks.legal || []).map((link) => (
                   <li key={link.name}>
@@ -206,7 +208,7 @@ export default function Footer({ flash, settings, sectionData = {}, brandColor =
                       href={link.href}
                       className="text-gray-400 hover:text-white transition-colors text-sm"
                     >
-                      {link.name}
+                      {t(link.name)}
                     </a>
                   </li>
                 ))}
@@ -220,10 +222,10 @@ export default function Footer({ flash, settings, sectionData = {}, brandColor =
           <div className="border-t border-gray-800 py-8 sm:py-12">
             <div className="text-center max-w-2xl mx-auto">
               <h3 className="text-xl font-bold text-white mb-4">
-                {sectionData.newsletter_title || t('Stay Updated with Our Latest Features')}
+                {sectionData.newsletter_title ? t(sectionData.newsletter_title) : t('Stay Updated with Our Latest Features')}
               </h3>
               <p className="text-gray-400 mb-6">
-                {sectionData.newsletter_subtitle || t('Join our newsletter for product updates and networking tips')}
+                {sectionData.newsletter_subtitle ? t(sectionData.newsletter_subtitle) : t('Join our newsletter for product updates and networking tips')}
               </p>
 
 

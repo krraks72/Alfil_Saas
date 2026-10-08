@@ -1,5 +1,6 @@
 import React from 'react';
 import { Head, usePage } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import FeaturesSection from './components/FeaturesSection';
@@ -103,6 +104,7 @@ interface PageProps {
 }
 
 export default function LandingPage() {
+  const { i18n } = useTranslation();
   const { plans, testimonials, faqs, customPages = [], settings, sectionData, flash } = usePage<PageProps>().props;
   const globalSettings = (usePage().props as any).globalSettings;
   const userLanguage = (usePage().props as any).userLanguage;
@@ -182,7 +184,7 @@ export default function LandingPage() {
   // }, []);
   const applyRTLDirection = React.useCallback(() => {
     const isDemo = globalSettings?.is_demo || false;
-    const currentLang = userLanguage || globalSettings?.defaultLanguage || 'en';
+    const currentLang = i18n.resolvedLanguage || i18n.language || userLanguage || globalSettings?.defaultLanguage || 'en';
     const isRTLLanguage = ['ar', 'he'].includes(currentLang);
     let dir = 'ltr';
 
@@ -212,7 +214,7 @@ export default function LandingPage() {
     document.body.dir = dir;
 
     return dir;
-  }, [userLanguage, globalSettings?.defaultLanguage, globalSettings?.is_demo, globalSettings?.layoutDirection]);
+  }, [i18n.language, i18n.resolvedLanguage, userLanguage, globalSettings?.defaultLanguage, globalSettings?.is_demo, globalSettings?.layoutDirection]);
 
   // Apply RTL on mount and when dependencies change
   React.useLayoutEffect(() => {

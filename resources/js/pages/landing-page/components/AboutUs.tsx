@@ -125,17 +125,17 @@ export default function AboutUs({ settings, sectionData, brandColor = '#3b82f6' 
   const storyBlock = (
     <div>
       <h3 className="text-2xl font-bold mb-6" style={{ color: textColor }}>
-        {sectionData.story_title || t('Empowering Retail Operations Since 2020')}
+        {sectionData.story_title ? t(sectionData.story_title) : t('Empowering Retail Operations Since 2020')}
       </h3>
       <div className="mb-8 leading-relaxed" style={{ color: subtitleColor }} dangerouslySetInnerHTML={{
-        __html: (sectionData.story_content || 'Founded by a team of retail enthusiasts and technology experts, our POS system was born from the frustration of outdated cash registers.').replace(/\n/g, '<br/>')
+        __html: t(sectionData.story_content || 'Founded by a team of retail enthusiasts and technology experts, our POS system was born from the frustration of outdated cash registers.').replace(/\n/g, '<br/>')
       }} />
       {stats.length > 0 && (
         <div className="flex items-center gap-8">
           {stats.map((stat, index) => (
             <div key={index} className="text-center">
-              <div className="text-2xl font-bold" style={{ color: statColorMap[stat.color] || textColor }}>{stat.value}</div>
-              <div className="text-sm" style={{ color: subtitleColor }}>{stat.label}</div>
+              <div className="text-2xl font-bold" style={{ color: statColorMap[stat.color] || textColor }}>{t(stat.value)}</div>
+              <div className="text-sm" style={{ color: subtitleColor }}>{t(stat.label)}</div>
             </div>
           ))}
         </div>
@@ -146,17 +146,17 @@ export default function AboutUs({ settings, sectionData, brandColor = '#3b82f6' 
   const imageBlock = (
     <div className="bg-white rounded-xl p-8 border border-gray-200 h-96 flex items-center justify-center">
       {sectionImage && !isBackground ? (
-        <img src={sectionImage} alt="About Us" className="max-w-full max-h-full object-contain rounded-lg" />
+        <img src={sectionImage} alt={t('About Us')} className="max-w-full max-h-full object-contain rounded-lg" />
       ) : (
         <div className="text-center">
           <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-6 flex items-center justify-center">
             <span className="text-3xl">{sectionData.image_icon || '🚀'}</span>
           </div>
           <h4 className="text-xl font-semibold mb-2" style={{ color: textColor }}>
-            {sectionData.image_title || t('Innovation Driven')}
+            {sectionData.image_title ? t(sectionData.image_title) : t('Innovation Driven')}
           </h4>
           <p style={{ color: subtitleColor }}>
-            {sectionData.image_subtitle || t('Building the future of retail')}
+            {sectionData.image_subtitle ? t(sectionData.image_subtitle) : t('Building the future of retail')}
           </p>
         </div>
       )}
@@ -174,10 +174,10 @@ export default function AboutUs({ settings, sectionData, brandColor = '#3b82f6' 
         style={{ zIndex: isBackground ? 2 : undefined }}>
         <div className={`text-center mb-8 sm:mb-12 lg:mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: textColor }}>
-            {sectionData.title || t('About Our POS System')}
+            {sectionData.title ? t(sectionData.title) : t('About Our POS System')}
           </h2>
           <p className="text-lg max-w-3xl mx-auto leading-relaxed font-medium" style={{ color: subtitleColor }}>
-            {sectionData.description || t('We are passionate about transforming how retailers operate.')}
+            {sectionData.description ? t(sectionData.description) : t('We are passionate about transforming how retailers operate.')}
           </p>
         </div>
 
@@ -186,17 +186,17 @@ export default function AboutUs({ settings, sectionData, brandColor = '#3b82f6' 
           <div className={`mb-8 sm:mb-12 lg:mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <div className="text-center max-w-3xl mx-auto">
               <h3 className="text-2xl font-bold mb-6" style={{ color: textColor }}>
-                {sectionData.story_title || t('Empowering Retail Operations Since 2020')}
+                {sectionData.story_title ? t(sectionData.story_title) : t('Empowering Retail Operations Since 2020')}
               </h3>
               <div className="mb-8 leading-relaxed" style={{ color: subtitleColor }} dangerouslySetInnerHTML={{
-                __html: (sectionData.story_content || 'Founded by a team of retail enthusiasts and technology experts, our POS system was born from the frustration of outdated cash registers.').replace(/\n/g, '<br/>')
+                __html: t(sectionData.story_content || 'Founded by a team of retail enthusiasts and technology experts, our POS system was born from the frustration of outdated cash registers.').replace(/\n/g, '<br/>')
               }} />
               {stats.length > 0 && (
                 <div className="flex items-center justify-center gap-8">
                   {stats.map((stat, index) => (
                     <div key={index} className="text-center">
-                      <div className="text-2xl font-bold" style={{ color: statColorMap[stat.color] || textColor }}>{stat.value}</div>
-                      <div className="text-sm" style={{ color: subtitleColor }}>{stat.label}</div>
+                      <div className="text-2xl font-bold" style={{ color: statColorMap[stat.color] || textColor }}>{t(stat.value)}</div>
+                      <div className="text-sm" style={{ color: subtitleColor }}>{t(stat.label)}</div>
                     </div>
                   ))}
                 </div>
@@ -226,10 +226,10 @@ export default function AboutUs({ settings, sectionData, brandColor = '#3b82f6' 
                   <IconComponent className="w-6 h-6" style={{ color: brandColor }} />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  {value.title}
+                  {t(value.title)}
                 </h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  {value.description}
+                  {t(value.description)}
                 </p>
               </div>
             );

@@ -48,6 +48,9 @@ class HandleInertiaRequests extends Middleware
             $availableLanguages = [];
             if (file_exists($languagesFile)) {
                 $availableLanguages = json_decode(file_get_contents($languagesFile), true) ?? [];
+                $availableLanguages = array_values(array_filter($availableLanguages, function ($language) {
+                    return is_array($language) && in_array($language['code'] ?? null, ['en', 'es', 'pt', 'fr'], true);
+                }));
             }
 
         // Skip database queries during installation

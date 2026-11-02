@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use App\Models\User;
+use Illuminate\Auth\AuthManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Inertia\Inertia;
@@ -11,15 +12,27 @@ use Illuminate\Support\Facades\File;
 
 class LanguageController extends Controller
 {
-    const ALLOWED_LANGUAGES = ['en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'zh', 'ar', 'hi', 'ko', 'th', 'vi', 'tr', 'pl', 'nl', 'da', 'sv', 'no', 'fi', 'cs', 'sk', 'hu', 'ro', 'bg', 'hr', 'sl', 'et', 'lv', 'lt', 'mt', 'ga', 'cy', 'eu', 'ca', 'gl', 'pt-BR', 'zh-CN', 'zh-TW', 'he'];
-    // Show the manage language Inertia page
-    public function managePage(Request $request, $lang = null)
+    const ALLOWED_LANGUAGES = ['en', 'es', 'pt', 'fr'];
+
+    private function getAllowedLanguages(): array
     {
         $langListPath = resource_path('lang/language.json');
         $languages = [];
+
         if (File::exists($langListPath)) {
-            $languages = json_decode(File::get($langListPath), true);
+            $languages = json_decode(File::get($langListPath), true) ?? [];
         }
+
+        return collect($languages)
+            ->filter(fn ($language) => is_array($language) && in_array($language['code'] ?? null, self::ALLOWED_LANGUAGES, true))
+            ->values()
+            ->all();
+    }
+
+    // Show the manage language Inertia page
+    public function managePage(Request $request, $lang = null)
+    {
+        $languages = $this->getAllowedLanguages();
         $defaultLang = 'en';
         $selectedLang = $defaultLang;
         if ($lang && collect($languages)->pluck('code')->contains($lang)) {
@@ -58,11 +71,7 @@ class LanguageController extends Controller
     // Load a language file
     public function load(Request $request)
     {
-        $langListPath = resource_path('lang/language.json');
-        $languages = collect();
-        if (File::exists($langListPath)) {
-            $languages = collect(json_decode(File::get($langListPath), true));
-        }
+        $languages = collect($this->getAllowedLanguages());
         $lang = $request->get('lang', 'en');
         if (!$languages->pluck('code')->contains($lang)) {
             return response()->json(['error' => __('Language not found')], 404);
@@ -79,11 +88,7 @@ class LanguageController extends Controller
     public function save(Request $request)
     {
         try {
-            $langListPath = resource_path('lang/language.json');
-            $languages = collect();
-            if (File::exists($langListPath)) {
-                $languages = collect(json_decode(File::get($langListPath), true));
-            }
+            $languages = collect($this->getAllowedLanguages());
             $lang = $request->get('lang');
             $data = $request->get('data');
             if (!$lang || !is_array($data) || !$languages->pluck('code')->contains($lang)) {
@@ -130,9 +135,14 @@ class LanguageController extends Controller
             'countryCode.size' => __('Country code must be exactly 2 characters.'),
         ]);
 
-        try {
-            // Check if language already exists in language.json
-            $languagesFile = resource_path('lang/language.json');
+      $requestedCode = strtolower((string) $request->code);
+      if (!in_array($requestedCode, self::ALLOWED_LANGUAGES, true)) {
+          return response()->json(['error' => __('Only English, Spanish, Portuguese, and French are supported.')], 422);
+      }
+
+      try {
+          // Check if language already exists in language.json
+          $languagesFile = resource_path('lang/language.json');
 
             if (!is_writable($languagesFile)) {
                 return response()->json(['error' => __('Language file is not writable. Please check file permissions.')], 500);
@@ -140,13 +150,13 @@ class LanguageController extends Controller
 
             $languages = json_decode(\Illuminate\Support\Facades\File::get($languagesFile), true);
 
-            $existingLanguage = collect($languages)->firstWhere('code', $request->code);
+            $existingLanguage = collect($languages)->firstWhere('code', $requestedCode);
             if ($existingLanguage) {
                 return response()->json(['error' => __('The language code already exists')], 422);
             }
 
             $languages[] = [
-                'code' => $request->code,
+                'code' => $requestedCode,
                 'name' => $request->name,
                 'countryCode' => strtoupper($request->countryCode),
                 'enabled' => true
@@ -159,7 +169,7 @@ class LanguageController extends Controller
 
             // Copy en.json to new language
             $enFile = resource_path('lang/en.json');
-            $newLangFile = resource_path("lang/{$request->code}.json");
+            $newLangFile = resource_path("lang/{$requestedCode}.json");
             if (\Illuminate\Support\Facades\File::exists($enFile)) {
                 $enContent = \Illuminate\Support\Facades\File::get($enFile);
                 \Illuminate\Support\Facades\File::put($newLangFile, $enContent);
@@ -174,7 +184,7 @@ class LanguageController extends Controller
         }
     }
 
-    public function deleteLanguage($languageCode)
+    public function deleteLanguage(string $languageCode)
     {
         if ($languageCode === 'en') {
             return response()->json(['error' => __('Cannot delete English language')], 422);
@@ -202,7 +212,7 @@ class LanguageController extends Controller
         // }
     }
 
-    public function toggleLanguageStatus($languageCode)
+    public function toggleLanguageStatus(string $languageCode)
     {
         if ($languageCode === 'en') {
             return response()->json(['error' => __('Cannot disable English language')], 422);
@@ -276,16 +286,12 @@ class LanguageController extends Controller
         $request->validate([
             'language' => 'required|string|max:10'
         ]);
-        $language = $request->input('language');
-        
+        $language = strtolower((string) $request->input('language'));
+
         // Validate that the language exists in our supported languages
-        $langListPath = resource_path('lang/language.json');
-        if (!\Illuminate\Support\Facades\File::exists($langListPath)) {
-            return response()->json(['error' => __('Language configuration not found')], 404);
-        }
-        $languages = json_decode(\Illuminate\Support\Facades\File::get($langListPath), true);
+        $languages = $this->getAllowedLanguages();
         $supportedLanguages = collect($languages)->pluck('code')->toArray();
-        if (!in_array($language, $supportedLanguages)) {
+        if (!in_array($language, $supportedLanguages, true)) {
             return response()->json(['error' => __('Language not supported')], 400);
         }
         
@@ -300,9 +306,11 @@ class LanguageController extends Controller
                 return back();
             }
             
-            if (auth()->check()) {
-                $user = auth()->user();
-                
+            /** @var AuthManager $authManager */
+            $authManager = app(AuthManager::class);
+            if ($authManager->check()) {
+                $user = $authManager->user();
+
                 // Update user's language
                 $user->lang = $language;
                 $user->save();

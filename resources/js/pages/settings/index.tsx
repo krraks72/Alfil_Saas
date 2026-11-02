@@ -44,6 +44,7 @@ export default function Settings() {
   const [activeSection, setActiveSection] = useState('system-settings');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { position } = useLayout();
+  const isCompanyUser = auth.user?.type === 'company';
 
   // Define all possible sidebar navigation items
   const allSidebarNavItems: (NavItem & { permission?: string })[] = [
@@ -170,6 +171,10 @@ export default function Settings() {
 
   // Filter sidebar items based on user permissions
   const sidebarNavItems = allSidebarNavItems.filter(item => {
+    if (item.href === '#aliaddo-settings') {
+      return isCompanyUser;
+    }
+
     // Hide company settings from super admin
     if (item.permission === 'manage-company-settings' && auth.user?.type === 'superadmin') {
       return false;
@@ -606,7 +611,7 @@ export default function Settings() {
                 <QuotationInvoiceSettings settings={systemSettings} />
               </section>
             )}
-            {(auth.user?.type === 'company') && (
+            {isCompanyUser && (
               <section id="aliaddo-settings" ref={aliaddoSettingsRef} className="mb-8">
                 <AliaddoSettings settings={aliaddoSettings} />
               </section>

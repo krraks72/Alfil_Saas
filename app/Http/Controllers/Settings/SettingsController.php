@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Models\AliaddoSetting;
 use App\Models\NotificationTemplate;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -79,12 +80,27 @@ class SettingsController extends Controller
             'templates' => $templates,
             'notificationSettings' => $notificationSettings,
             'emailTemplates' => $emailTemplates,
+            'aliaddoSettings' => $user->type === 'company'
+                ? $this->aliaddoSettingsForCompany($user->id)
+                : null,
         ];
 
         // Webhooks removed from company side
         $data['webhooks'] = [];
 
         return Inertia::render('settings/index', $data);
+    }
+
+    private function aliaddoSettingsForCompany(int $companyId): array
+    {
+        $setting = AliaddoSetting::firstWhere('company_id', $companyId);
+
+        return [
+            'enabled' => $setting?->enabled ?? false,
+            'base_url' => $setting?->base_url ?? 'https://orka.test.aliaddo.net',
+            'has_token' => filled($setting?->api_token),
+            'configuration' => $setting?->configuration ?? [],
+        ];
     }
 
     /**

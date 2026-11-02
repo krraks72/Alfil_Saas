@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { PageTemplate } from '@/components/page-template';
+import { PageTemplate, type PageAction } from '@/components/page-template';
+import type { TableColumn } from '@/types/crud';
 import { usePage, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { Eye, Edit, Trash2, MoreHorizontal, Printer, Download, DollarSign, Users, ChartNoAxesCombined, ShoppingBag, Banknote, CreditCard, Smartphone, Building2, Shuffle, TrendingUp, TrendingDown, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -146,6 +147,20 @@ export default function Sales() {
     }
   };
 
+  const retryElectronicInvoice = (sale: { id: number }) => {
+    router.post(route('sales.aliaddo.retry', sale.id), {}, {
+      preserveScroll: true,
+      onSuccess: (page) => {
+        const flash = page.props.flash;
+        if (flash && typeof flash === 'object') {
+          if ('error' in flash && typeof flash.error === 'string') toast.error(flash.error);
+          else if ('success' in flash && typeof flash.success === 'string') toast.success(flash.success);
+        }
+      },
+      onError: (errors) => toast.error(Object.values(errors).join(', ')),
+    });
+  };
+
 
 
 
@@ -187,7 +202,7 @@ export default function Sales() {
     }
   };
 
-  const pageActions = [];
+  const pageActions: PageAction[] = [];
   if (hasPermission(permissions, 'export-sales')) {
     // Generate export label based on current filters
     const getExportLabel = () => {
@@ -220,7 +235,7 @@ export default function Sales() {
     { title: t('Sales') }
   ];
 
-  const columns = [
+  const columns: TableColumn[] = [
     { 
       key: 'sale_number', 
       label: t('Sale Number'), 
@@ -261,6 +276,31 @@ export default function Sales() {
         </div>
       </div>
     ) },
+    {
+      key: 'aliaddo_status',
+      label: t('Electronic Invoice'),
+      render: (_value: string | null, row: any) => {
+        if (row.aliaddo_status === 'issued') {
+          return <Badge className="bg-green-50 text-green-700">{row.aliaddo_prefix}-{row.aliaddo_consecutive}</Badge>;
+        }
+        if (row.aliaddo_status === 'pending') {
+          return <Badge variant="secondary">{t('In progress')}</Badge>;
+        }
+        if (row.aliaddo_status === 'failed') {
+          return (
+            <div className="space-y-1">
+              <Badge variant="destructive" title={row.aliaddo_error ?? undefined}>{t('Failed')}</Badge>
+              {hasPermission(permissions, 'create-sales') && (
+                <Button variant="link" size="sm" className="h-auto p-0" onClick={() => retryElectronicInvoice(row)}>
+                  {t('Retry')}
+                </Button>
+              )}
+            </div>
+          );
+        }
+        return <span className="text-sm text-muted-foreground">{t('Not issued')}</span>;
+      },
+    },
     // { key: 'payment_method', label: t('Payment Method'), render: (value: string) => {
     //   const methodDetails = getPaymentMethodDetails(value);
     //   const IconComponent = methodDetails.icon;
@@ -715,6 +755,20 @@ export default function Sales() {
 
                     {/* Sale Details */}
                     <div className="space-y-2 mb-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{t('Electronic Invoice')}:</span>
+                        {sale.aliaddo_status === 'issued' ? (
+                          <Badge className="bg-green-50 text-green-700">{sale.aliaddo_prefix}-{sale.aliaddo_consecutive}</Badge>
+                        ) : sale.aliaddo_status === 'failed' ? (
+                          hasPermission(permissions, 'create-sales') ? (
+                            <Button variant="link" size="sm" className="h-auto p-0" onClick={() => retryElectronicInvoice(sale)}>
+                              {t('Retry')}
+                            </Button>
+                          ) : <Badge variant="destructive">{t('Failed')}</Badge>
+                        ) : (
+                          <Badge variant="secondary">{t(sale.aliaddo_status || 'Not issued')}</Badge>
+                        )}
+                      </div>
                       <div className="flex justify-between items-center">
                         <span className="text-xs text-gray-500 dark:text-gray-400">{t('Amount')}:</span>
                         <span className="text-sm font-semibold text-gray-900 dark:text-white font-mono">

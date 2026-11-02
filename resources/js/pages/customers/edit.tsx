@@ -20,8 +20,8 @@ const STEPS = [
 ];
 
 const STEP_FIELDS: Record<number, string[]> = {
-  1: ['name', 'email', 'phone', 'date_of_birth', 'gender', 'status'],
-  2: ['billing_address', 'billing_city', 'billing_state', 'billing_postal_code', 'billing_country'],
+  1: ['name', 'email', 'phone', 'date_of_birth', 'gender', 'status', 'identification', 'first_name', 'last_name', 'digit_check', 'identification_type_code', 'person_type', 'regime_type', 'responsible_for', 'responsibilities', 'economic_activities'],
+  2: ['billing_address', 'billing_city', 'billing_state', 'billing_postal_code', 'billing_country', 'billing_region_code', 'billing_city_code'],
   3: ['shipping_address', 'shipping_city', 'shipping_state', 'shipping_postal_code', 'shipping_country', 'notes'],
 };
 
@@ -32,6 +32,18 @@ interface FormData {
   date_of_birth: string;
   gender: string;
   status: string;
+  identification: string;
+  first_name: string;
+  last_name: string;
+  digit_check: string;
+  identification_type_code: string;
+  person_type: string;
+  regime_type: string;
+  responsible_for: string;
+  responsibilities: string;
+  billing_region_code: string;
+  billing_city_code: string;
+  economic_activities: string;
   billing_address: string;
   billing_city: string;
   billing_state: string;
@@ -84,6 +96,18 @@ export default function CustomerEdit() {
       : '',
     gender: customer.gender ?? '',
     status: customer.status ?? 'active',
+    identification: customer.identification ?? '',
+    first_name: customer.first_name ?? '',
+    last_name: customer.last_name ?? '',
+    digit_check: customer.digit_check ?? '',
+    identification_type_code: customer.identification_type_code ?? '',
+    person_type: customer.person_type ?? '',
+    regime_type: customer.regime_type ?? '',
+    responsible_for: customer.responsible_for ?? '',
+    responsibilities: customer.responsibilities ?? '',
+    billing_region_code: customer.billing_region_code ?? '',
+    billing_city_code: customer.billing_city_code ?? '',
+    economic_activities: customer.economic_activities ?? '',
     billing_address: customer.billing_address ?? '',
     billing_city: customer.billing_city ?? '',
     billing_state: customer.billing_state ?? '',
@@ -350,6 +374,36 @@ export default function CustomerEdit() {
                   />
                 </div>
               </Field>
+              <Field label={t('Tax identification number')}>
+                <Input value={form.identification} onChange={e => set('identification', e.target.value)} />
+              </Field>
+              <Field label={t('Tax first name')}>
+                <Input value={form.first_name} onChange={e => set('first_name', e.target.value)} />
+              </Field>
+              <Field label={t('Tax last name')}>
+                <Input value={form.last_name} onChange={e => set('last_name', e.target.value)} />
+              </Field>
+              <Field label={t('Identification check digit')}>
+                <Input value={form.digit_check} onChange={e => set('digit_check', e.target.value)} />
+              </Field>
+              <Field label={t('Identification type code')}>
+                <Input value={form.identification_type_code} onChange={e => set('identification_type_code', e.target.value)} />
+              </Field>
+              <Field label={t('Person type code')}>
+                <Input value={form.person_type} onChange={e => set('person_type', e.target.value)} />
+              </Field>
+              <Field label={t('Tax regime code')}>
+                <Input value={form.regime_type} onChange={e => set('regime_type', e.target.value)} />
+              </Field>
+              <Field label={t('Tax responsibility code')}>
+                <Input value={form.responsible_for} onChange={e => set('responsible_for', e.target.value)} />
+              </Field>
+              <Field label={t('Tax responsibilities')}>
+                <Input value={form.responsibilities} onChange={e => set('responsibilities', e.target.value)} />
+              </Field>
+              <Field label={t('Economic activities')}>
+                <Input value={form.economic_activities} onChange={e => set('economic_activities', e.target.value)} />
+              </Field>
             </div>
           </div>
 
@@ -384,6 +438,13 @@ export default function CustomerEdit() {
                   placeholder={t('Enter state')}
                   className={cn(allErrors.billing_state && 'border-red-400 focus-visible:border-red-400')}
                 />
+              </Field>
+
+              <Field label={t('DIAN region code')}>
+                <Input value={form.billing_region_code} onChange={e => set('billing_region_code', e.target.value)} />
+              </Field>
+              <Field label={t('DIAN city code')}>
+                <Input value={form.billing_city_code} onChange={e => set('billing_city_code', e.target.value)} />
               </Field>
 
               <Field label={t('Postal Code')} required error={allErrors.billing_postal_code}>

@@ -111,6 +111,7 @@ Route::middleware(['auth', 'verified', 'plan.access'])->group(function () {
 
     // Purchase Invoice settings routes
     Route::post('settings/quotation-invoice', [\App\Http\Controllers\Settings\QuotationInvoiceSettingController::class, 'store'])->name('settings.quotation-invoice.store');
+    Route::post('settings/aliaddo', [\App\Http\Controllers\Settings\AliaddoSettingController::class, 'store'])->name('settings.aliaddo.store');
 
     // Settings API route
     Route::get('settings/get-settings', [SettingsController::class, 'getSettings'])->name('settings.getSettings');

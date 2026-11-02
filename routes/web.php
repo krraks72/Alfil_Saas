@@ -132,6 +132,16 @@ Route::get('/translations/{locale}', [TranslationController::class, 'getTranslat
 Route::get('/refresh-language/{locale}', [TranslationController::class, 'refreshLanguage'])->name('refresh-language');
 Route::get('/initial-locale', [TranslationController::class, 'getInitialLocale'])->name('initial-locale');
 
+Route::middleware(['auth', 'verified', \App\Http\Middleware\SuperAdminMiddleware::class])
+    ->prefix('superadmin')
+    ->name('superadmin.')
+    ->group(function () {
+        Route::get('database-updates', [\App\Http\Controllers\DatabaseMigrationController::class, 'index'])
+            ->name('database-updates.index');
+        Route::post('database-updates/run', [\App\Http\Controllers\DatabaseMigrationController::class, 'run'])
+            ->name('database-updates.run');
+    });
+
 Route::middleware(['auth', 'verified'])->group(function () {
     // Plans routes - accessible without plan check
     Route::get('plans', [PlanController::class, 'index'])->name('plans.index');
@@ -555,6 +565,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::post('/api/pos/sales', [\App\Http\Controllers\SaleController::class, 'store'])->name('pos.sales.store')->middleware('permission:create-sales');
 
+            Route::prefix('/integrations/aliaddo')->name('aliaddo.')->group(function () {
+                Route::post('/invoices', [\App\Http\Controllers\AliaddoDocumentController::class, 'createInvoice'])
+                    ->name('invoices.store')
+                    ->middleware('permission:create-sales');
+                Route::get('/invoices/find-by-prefix-and-consecutive', [\App\Http\Controllers\AliaddoDocumentController::class, 'findInvoiceByPrefixAndConsecutive'])
+                    ->name('invoices.find')
+                    ->middleware('permission:view-sales');
+                Route::get('/invoices/{id}', [\App\Http\Controllers\AliaddoDocumentController::class, 'getInvoice'])
+                    ->whereUuid('id')
+                    ->name('invoices.show')
+                    ->middleware('permission:view-sales');
+
+                Route::post('/equivalent-documents', [\App\Http\Controllers\AliaddoDocumentController::class, 'createEquivalentDocument'])
+                    ->name('equivalent-documents.store')
+                    ->middleware('permission:create-sales');
+                Route::get('/equivalent-documents/find-by-prefix-and-consecutive', [\App\Http\Controllers\AliaddoDocumentController::class, 'findEquivalentDocumentByPrefixAndConsecutive'])
+                    ->name('equivalent-documents.find')
+                    ->middleware('permission:view-sales');
+                Route::get('/equivalent-documents/{id}', [\App\Http\Controllers\AliaddoDocumentController::class, 'getEquivalentDocument'])
+                    ->whereUuid('id')
+                    ->name('equivalent-documents.show')
+                    ->middleware('permission:view-sales');
+            });
+
             // POS Cart routes
             Route::post('/api/pos/cart', [\App\Http\Controllers\PosCartController::class, 'getOrCreate'])->name('pos.cart.get-or-create');
             Route::post('/api/pos/cart/{cart}/items', [\App\Http\Controllers\PosCartController::class, 'upsertItem'])->name('pos.cart.upsert-item');
@@ -575,6 +609,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/sales', [\App\Http\Controllers\SaleController::class, 'index'])->name('sales.index');
             Route::get('/sales/{sale}', [\App\Http\Controllers\SaleController::class, 'show'])->name('sales.show')->middleware('permission:view-sales');
             Route::get('/sales/file/export', [\App\Http\Controllers\SaleController::class, 'fileExport'])->name('sale.export')->middleware('permission:export-sales');
+            Route::post('/sales/{sale}/aliaddo/retry', [\App\Http\Controllers\AliaddoDocumentController::class, 'retrySaleInvoice'])
+                ->name('sales.aliaddo.retry')
+                ->middleware('permission:create-sales');
         });
 
         // Purchase Management routes
@@ -734,4 +771,3 @@ Route::post('cookie/consent', [\App\Http\Controllers\CookieConsentController::cl
 Route::middleware(['auth', 'verified', 'plan.access'])->group(function () {
     Route::get('cookie/consent/download', [\App\Http\Controllers\CookieConsentController::class, 'download'])->name('cookie.consent.download');
 });
-

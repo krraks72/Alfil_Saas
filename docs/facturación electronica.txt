@@ -1,0 +1,805 @@
+factura POS
+
+<?php
+
+$curl = curl_init();
+
+curl_setopt_array($curl, array(
+   CURLOPT_URL => 'https://orka.test.aliaddo.net/v2/documents/invoices',
+   CURLOPT_RETURNTRANSFER => true,
+   CURLOPT_ENCODING => '',
+   CURLOPT_MAXREDIRS => 10,
+   CURLOPT_TIMEOUT => 0,
+   CURLOPT_FOLLOWLOCATION => true,
+   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+   CURLOPT_CUSTOMREQUEST => 'POST',
+   CURLOPT_POSTFIELDS =>'{
+    "code": "01",
+    "typeOperation": "10",
+    "mode": "Test",
+    "format": "Standard",
+    "testSetId": "0e3d0669-03ed-4f70-a237-c9541d22c5a1",
+    "prefix": "SETP",
+    "consecutive": 1,
+    "orderReference": "ORD-2025-001",
+    "currencyCode": "COP",
+    "currencyRate": 0,
+    "dueAt": "2026-03-10",
+    "periodStartDate": "2026-03-10",
+    "periodEndDate": "2026-03-10",
+    "deliveryAt": "2026-03-10",
+    "incoterms": "CFR",
+    "deliveryTerms": "Entrega en puerta",
+    "terms": "Términos y condiciones comerciales",
+    "termDay": 30,
+    "paymentMeanCode": "10",
+    "branch": {
+        "name": "Sucursal Principal",
+        "address": "Calle Ficticia 123, Edificio Empresarial",
+        "regionCode": "11",
+        "regionName": "Departamento Ejemplo",
+        "cityCode": "11001",
+        "cityName": "Ciudad Ejemplo",
+        "phone": "1234567890"
+    },
+    "resolution": {
+        "key": "fc8eac422eba16e22ffd8c6f94b3f40a6e38162c",
+        "prefix": "SETP",
+        "number": 18760000001,
+        "rangeInitial": 990000000,
+        "rangeFinal": 995000000,
+        "validFrom": "2019-01-19",
+        "validUntil": "2030-01-19"
+    },
+    "customer": {
+        "companyName": "Mi empresa S.A",
+        "personType": "2",
+        "regimeType": "49",
+        "firstName": "Nombres del cliente",
+        "lastName": "Apellidos del cliente",
+        "identification": "1234567890",
+        "digitCheck": "2",
+        "identificationTypeCode": "13",
+        "email": "clienteemail@gmail.com",
+        "phone": "1234567890",
+        "responsibleFor": "ZZ",
+        "responsibilities": "R-99-PN",
+        "BillingAddress": {
+            "address": "Tu dirección 01 #02-03",
+            "countryName": "Colombia",
+            "countryCode": "CO",
+            "regionName": "Bogotá",
+            "regionCode": "11",
+            "cityName": "Bogotá",
+            "cityCode": "11001",
+            "postalCode": "110011",
+            "neighborhood": "Chapinero",
+            "phone": "1234567890",
+            "contactName": "Nombre Contacto"
+        },
+        "ShippingAddress": {
+            "address": "Tu dirección 01 #02-03",
+            "countryName": "Colombia",
+            "countryCode": "CO",
+            "regionName": "Bogotá",
+            "regionCode": "11",
+            "cityName": "Bogotá",
+            "cityCode": "11001",
+            "postalCode": "110011",
+            "neighborhood": "Chapinero",
+            "phone": "1234567890",
+            "contactName": "Nombre Contacto"
+        }
+    },
+    "lines": [
+        {
+            "code": "PROD001",
+            "name": "Producto número 1",
+            "modelName": "Modelo Prueba",
+            "description": "Descrpción del producto número 1",
+            "brandName": "Marca1",
+            "itemCodeSupplier": "Supplier123",
+            "unitMeasurementCode": "94",
+            "unitMeasurementName": "Unidad",
+            "price": 10000,
+            "quantity": 5,
+            "discountAmount": 1000,
+            "chargeAmount": 1000,
+            "standardType": "001",
+            "standardCode": "10101501",
+            "discounts": [
+                {
+                    "name": "Descuento por volumen",
+                    "type": "P",
+                    "rate": 10,
+                    "amount": 1000
+                }
+            ],
+            "charges": [
+                {
+                    "name": "Costo de envío",
+                    "type": "F",
+                    "rate": 1000,
+                    "amount": 1000
+                }
+            ],
+            "taxes": [
+                {
+                    "name": "IVA",
+                    "code": "01",
+                    "type": "P",
+                    "rate": 19,
+                    "amount": 1900,
+                    "base": 10000
+                }
+            ],
+            "withholdings": [
+                {
+                    "name": "ReteIVA",
+                    "code": "05",
+                    "type": "P",
+                    "rate": 15,
+                    "amount": 285,
+                    "base": 1900
+                }
+            ]
+        }
+    ],
+    "totals": {
+        "amount": 50000,
+        "prepaymentAmount": 0,
+        "taxesAmount": 9500,
+        "withholdingAmount": 1425,
+        "discountsAmount": 0,
+        "chargesAmount": 0
+    },
+    "notes": [
+        "Nota importante 1",
+        "Nota importante 2"
+    ],
+    "remark": "Comentarios adicionales"
+}',
+   CURLOPT_HTTPHEADER => array(
+      'Authorization: Bearer <token>',
+      'Content-Type: application/json'
+   ),
+));
+
+$response = curl_exec($curl);
+
+curl_close($curl);
+echo $response;
+
+Factura Salud
+
+<?php
+
+$curl = curl_init();
+
+curl_setopt_array($curl, array(
+   CURLOPT_URL => 'https://orka.test.aliaddo.net/v2/documents/invoices',
+   CURLOPT_RETURNTRANSFER => true,
+   CURLOPT_ENCODING => '',
+   CURLOPT_MAXREDIRS => 10,
+   CURLOPT_TIMEOUT => 0,
+   CURLOPT_FOLLOWLOCATION => true,
+   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+   CURLOPT_CUSTOMREQUEST => 'POST',
+   CURLOPT_POSTFIELDS =>'{
+    "code": "01",
+    "typeOperation": "SS-CUDE",
+    "mode": "Test",
+    "format": "Standard",
+    "testSetId": "550e8400-e29b-41d4-a716-446655440001",
+    "prefix": "SETP",
+    "consecutive": 994110417,
+    "orderReference": "53279097",
+    "currencyCode": "COP",
+    "currencyRate": 0,
+    "issuedAt": "2026-02-10",
+    "dueAt": "2026-02-10",
+    "periodStartDate": "2026-02-10",
+    "periodEndDate": "2026-02-10",
+    "deliveryAt": "2026-02-10",
+    "deliveryTerms": "Entrega del producto en la puerta de la casa",
+    "terms": "Este es mi termino y condiciones",
+    "termDay": 30,
+    "paymentMeanCode": "10",
+    "branch": {
+        "name": "Sucursal Centro / Punto de Venta Norte / Oficina Principal",
+        "address": "Dirección de la sucursal",
+        "regionCode": "11",
+        "regionName": "Bogotá",
+        "cityCode": "11001",
+        "cityName": "BOGOTÁ. D.C. (DC)",
+        "phone": "1234567890"
+    },
+    "resolution": {
+        "key": "fc8eac422eba16e22ffd8c6f94b3f40a6e38162c",
+        "prefix": "SETP",
+        "number": 18760000001,
+        "rangeInitial": 990000000,
+        "rangeFinal": 995000000,
+        "validFrom": "2019-01-19",
+        "validUntil": "2030-01-19"
+    },
+    "customer": {
+        "companyName": "Mi empresa S.A",
+        "personType": "2",
+        "regimeType": "49",
+        "firstName": "Nombres del cliente",
+        "lastName": "Apellidos del cliente",
+        "identification": "1234567890",
+        "digitCheck": "2",
+        "identificationTypeCode": "13",
+        "email": "clienteemail@gmail.com",
+        "phone": "1234567890",
+        "responsibleFor": "ZZ",
+        "responsibilities": "R-99-PN",
+        "economicActivities": "7020;5140",
+        "BillingAddress": {
+            "address": "Dirección del cliente",
+            "countryName": "Colombia",
+            "countryCode": "CO",
+            "regionName": "Bogotá",
+            "regionCode": "11",
+            "cityName": "Bogotá",
+            "cityCode": "11001",
+            "postalCode": "11001",
+            "neighborhood": "Las mercedes",
+            "phone": "1234567890",
+            "contactName": "Alexandra Champlin"
+        },
+        "ShippingAddress": {
+            "address": "Direccion de entrega del cliente",
+            "countryName": "Colombia",
+            "countryCode": "CO",
+            "regionName": "Bogotá",
+            "regionCode": "11",
+            "cityName": "Bogotá",
+            "cityCode": "11001",
+            "postalCode": "11001",
+            "neighborhood": "Las mercedes",
+            "phone": "1234567890",
+            "contactName": "Megan Jones MD"
+        }
+    },
+    "lines": [
+        {
+            "standardType": "001",
+            "standardCode": "123",
+            "code": "e",
+            "name": "Producto número 1",
+            "modelName": "Modelo Prueba",
+            "description": "descripcion del producto numero 1",
+            "brandName": "Marca1",
+            "itemCodeSupplier": "Supplier123",
+            "unitMeasurementCode": "94",
+            "unitMeasurementName": "Unidad",
+            "price": 5000,
+            "quantity": 1,
+            "discountAmount": 500,
+            "chargeAmount": 800,
+            "taxes": [
+                {
+                    "name": "Iva",
+                    "code": "01",
+                    "type": "P",
+                    "rate": 19,
+                    "amount": 1007,
+                    "base": 5300
+                }
+            ],
+            "withholdings": [
+                {
+                    "name": "Rete Fuente",
+                    "code": "06",
+                    "type": "P",
+                    "rate": 2.5,
+                    "amount": 132.5,
+                    "base": 5300
+                }
+            ],
+            "charges": [
+                {
+                    "name": "Mi cargo",
+                    "type": "F",
+                    "rate": 0,
+                    "amount": 800
+                }
+            ],
+            "discounts": [
+                {
+                    "name": "Mi descuento",
+                    "type": "P",
+                    "rate": 10,
+                    "amount": 500
+                }
+            ]
+        }
+    ],
+    "totals": {
+        "amount": 5300,
+        "prepaymentAmount": 0,
+        "taxesAmount": 1007,
+        "withholdingAmount": 132.5,
+        "discountsAmount": 0,
+        "chargesAmount": 0
+    },
+    "notes": [
+        "Esta es mi nota del documento"
+    ],
+    "remark": "Estos son mis comentarios del documento",
+    "healthSector": {
+        "serviceProviderCode": "0123456789",
+        "paymentMethod": "Pago individual por caso",
+        "coverageOrBenefitPlan": "01",
+        "contractNumber": "031554",
+        "policyNumber": "256489782",
+        "copayment": 0,
+        "moderatorFee": 0,
+        "sharedPaymentsInVoluntaryPlans": 0,
+        "advance": 0,
+        "startDateService": "2025/02/17",
+        "endDateService": "2025/02/17"
+    }
+}',
+   CURLOPT_HTTPHEADER => array(
+      'Authorization: Bearer <token>',
+      'Content-Type: application/json'
+   ),
+));
+
+$response = curl_exec($curl);
+
+curl_close($curl);
+echo $response;
+
+creacion de divisas
+
+<?php
+
+$curl = curl_init();
+
+curl_setopt_array($curl, array(
+   CURLOPT_URL => 'https://orka.test.aliaddo.net/v2/documents/invoices',
+   CURLOPT_RETURNTRANSFER => true,
+   CURLOPT_ENCODING => '',
+   CURLOPT_MAXREDIRS => 10,
+   CURLOPT_TIMEOUT => 0,
+   CURLOPT_FOLLOWLOCATION => true,
+   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+   CURLOPT_CUSTOMREQUEST => 'POST',
+   CURLOPT_POSTFIELDS =>'{
+  "code": "01",
+  "typeOperation": "15",
+  "mode": "Test",
+  "format": "Standard",
+  "testSetId": "0e3d0669-03ed-4f70-a237-c9541d22c5a1",
+  "prefix": "SETP",
+  "consecutive": 1,
+  "orderReference": "ORD-2025-001",
+  "currencyCode": "COP",
+  "currencyRate": 0,
+  "issuedAt": "2026-03-10",
+  "dueAt": "2026-03-10",
+  "periodStartDate": "2026-03-10",
+  "periodEndDate": "2026-03-10",
+  "deliveryAt": "2026-03-10",
+  "deliveryTerms": "Entrega en puerta",
+  "terms": "Términos y condiciones comerciales",
+  "termDay": 30,
+  "paymentMeanCode": "10",
+  "branch": {
+    "name": "Sucursal Principal",
+    "address": "Calle Ficticia 123, Edificio Empresarial",
+    "regionCode": "11",
+    "regionName": "Departamento Ejemplo",
+    "cityCode": "11001",
+    "cityName": "Ciudad Ejemplo",
+    "phone": "1234567890"
+  },
+  "resolution": {
+    "key": "fc8eac422eba16e22ffd8c6f94b3f40a6e38162c",
+    "prefix": "SETP",
+    "number": 18760000001,
+    "rangeInitial": 990000000,
+    "rangeFinal": 995000000,
+    "validFrom": "2019-01-19",
+    "validUntil": "2030-01-19"
+  },
+  "customer": {
+    "companyName": "Mi empresa S.A",
+    "personType": "2",
+    "regimeType": "49",
+    "firstName": "Nombres del cliente",
+    "lastName": "Apellidos del cliente",
+    "identification": "1234567890",
+    "digitCheck": "2",
+    "identificationTypeCode": "13",
+    "email": "clienteemail@gmail.com",
+    "phone": "1234567890",
+    "responsibleFor": "ZZ",
+    "responsibilities": "R-99-PN",
+    "BillingAddress": {
+      "address": "Tu dirección 01 #02-03",
+      "countryName": "Colombia",
+      "countryCode": "CO",
+      "regionName": "Bogotá",
+      "regionCode": "11",
+      "cityName": "Bogotá",
+      "cityCode": "11001",
+      "postalCode": "110011",
+      "neighborhood": "Chapinero",
+      "phone": "1234567890",
+      "contactName": "Nombre Contacto"
+    },
+    "ShippingAddress": {
+      "address": "Tu dirección 01 #02-03",
+      "countryName": "Colombia",
+      "countryCode": "CO",
+      "regionName": "Bogotá",
+      "regionCode": "11",
+      "cityName": "Bogotá",
+      "cityCode": "11001",
+      "postalCode": "110011",
+      "neighborhood": "Chapinero",
+      "phone": "1234567890",
+      "contactName": "Nombre Contacto"
+    }
+  },
+  "lines": [
+    {
+      "code": "PROD001",
+      "name": "Producto número 1",
+      "modelName": "Modelo Prueba",
+      "description": "Descrpción del producto número 1",
+      "brandName": "Marca1",
+      "itemCodeSupplier": "Supplier123",
+      "unitMeasurementCode": "94",
+      "unitMeasurementName": "Unidad",
+      "price": 10000,
+      "quantity": 5,
+      "discountAmount": 5000,
+      "chargeAmount": 5000,
+      "standardType": "001",
+      "standardCode": "10101501",
+      "discounts": [
+        {
+          "name": "Descuento por volumen",
+          "type": "P",
+          "rate": 10,
+          "amount": 1000
+        }
+      ],
+      "charges": [
+        {
+          "name": "Costo de envío",
+          "type": "F",
+          "rate": 1000,
+          "amount": 1000
+        }
+      ],
+      "taxes": [
+        {
+          "name": "IVA",
+          "code": "01",
+          "type": "P",
+          "rate": 19,
+          "amount": 1900,
+          "base": 10000
+        }
+      ],
+      "withholdings": [
+        {
+          "name": "ReteIVA",
+          "code": "05",
+          "type": "P",
+          "rate": 15,
+          "amount": 285,
+          "base": 1900
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "amount": 50000,
+    "prepaymentAmount": 0,
+    "taxesAmount": 9500,
+    "withholdingAmount": 1425,
+    "discountsAmount": 0,
+    "chargesAmount": 0
+  },
+  "notes": [
+    "Nota importante 1",
+    "Nota importante 2"
+  ],
+  "remark": "Comentarios adicionales",
+  "purchaseAndSaleCurrencies": {
+    "code": "01"
+  }
+}',
+   CURLOPT_HTTPHEADER => array(
+      'Authorization: Bearer <token>',
+      'Content-Type: application/json'
+   ),
+));
+
+$response = curl_exec($curl);
+
+curl_close($curl);
+echo $response;
+
+consultar por id
+<?php
+
+$curl = curl_init();
+
+curl_setopt_array($curl, array(
+   CURLOPT_URL => 'https://orka.test.aliaddo.net/v2/documents/invoices/da288d05-ff57-4caa-b94e-a28a66f38451',
+   CURLOPT_RETURNTRANSFER => true,
+   CURLOPT_ENCODING => '',
+   CURLOPT_MAXREDIRS => 10,
+   CURLOPT_TIMEOUT => 0,
+   CURLOPT_FOLLOWLOCATION => true,
+   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+   CURLOPT_CUSTOMREQUEST => 'GET',
+   CURLOPT_HTTPHEADER => array(
+      'Authorization: Bearer <token>'
+   ),
+));
+
+$response = curl_exec($curl);
+
+curl_close($curl);
+echo $response;
+
+consultar por frefijo y consecutivo
+<?php
+
+$curl = curl_init();
+
+curl_setopt_array($curl, array(
+   CURLOPT_URL => 'https://orka.test.aliaddo.net/v2/documents/invoices/find-by-prefix-and-consecutive?prefix=&consecutive=',
+   CURLOPT_RETURNTRANSFER => true,
+   CURLOPT_ENCODING => '',
+   CURLOPT_MAXREDIRS => 10,
+   CURLOPT_TIMEOUT => 0,
+   CURLOPT_FOLLOWLOCATION => true,
+   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+   CURLOPT_CUSTOMREQUEST => 'GET',
+   CURLOPT_HTTPHEADER => array(
+      'Authorization: Bearer <token>'
+   ),
+));
+
+$response = curl_exec($curl);
+
+curl_close($curl);
+echo $response;
+
+
+documento equivalente POS
+<?php
+
+$curl = curl_init();
+
+curl_setopt_array($curl, array(
+   CURLOPT_URL => 'https://orka.test.aliaddo.net/v2/documents/equivalent-documents',
+   CURLOPT_RETURNTRANSFER => true,
+   CURLOPT_ENCODING => '',
+   CURLOPT_MAXREDIRS => 10,
+   CURLOPT_TIMEOUT => 0,
+   CURLOPT_FOLLOWLOCATION => true,
+   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+   CURLOPT_CUSTOMREQUEST => 'POST',
+   CURLOPT_POSTFIELDS =>'{
+  "code": "20",
+  "typeOperation": "10",
+  "mode": "Test",
+  "format": "Standard",
+  "testSetId": "0e3d0669-03ed-4f70-a237-c9541d22c5a1",
+  "prefix": "EPOS",
+  "consecutive": 1,
+  "orderReference": "ORD-2025-001",
+  "currencyCode": "COP",
+  "currencyRate": 0,
+  "issuedAt": "2026-03-10",
+  "dueAt": "2026-03-10",
+  "periodStartDate": "2026-03-10",
+  "periodEndDate": "2026-03-10",
+  "deliveryAt": "2026-03-10",
+  "deliveryTerms": "Entrega en puerta",
+  "terms": "Términos y condiciones comerciales",
+  "termDay": 30,
+  "paymentMeanCode": "10",
+  "branch": {
+    "name": "Sucursal Principal",
+    "address": "Calle Ficticia 123, Edificio Empresarial",
+    "regionCode": "11",
+    "regionName": "Departamento Ejemplo",
+    "cityCode": "11001",
+    "cityName": "Ciudad Ejemplo",
+    "phone": "1234567890"
+  },
+  "resolution": {
+    "key": "fc8eac422eba16e22ffd8c6f94b3f40a6e38162c",
+    "prefix": "EPOS",
+    "number": 18760000001,
+    "rangeInitial": 1,
+    "rangeFinal": 1000000,
+    "validFrom": "2019-01-19",
+    "validUntil": "2030-01-19"
+  },
+  "customer": {
+    "companyName": "Mi empresa S.A",
+    "personType": "2",
+    "regimeType": "49",
+    "firstName": "Nombres del cliente",
+    "lastName": "Apellidos del cliente",
+    "identification": "1234567890",
+    "digitCheck": "2",
+    "identificationTypeCode": "13",
+    "email": "clienteemail@gmail.com",
+    "phone": "1234567890",
+    "responsibleFor": "ZZ",
+    "responsibilities": "R-99-PN",
+    "BillingAddress": {
+      "address": "Tu dirección 01 #02-03",
+      "countryName": "Colombia",
+      "countryCode": "CO",
+      "regionName": "Bogotá",
+      "regionCode": "11",
+      "cityName": "Bogotá",
+      "cityCode": "11001",
+      "postalCode": "110011",
+      "neighborhood": "Chapinero",
+      "phone": "1234567890",
+      "contactName": "Nombre Contacto"
+    },
+    "ShippingAddress": {
+      "address": "Tu dirección 01 #02-03",
+      "countryName": "Colombia",
+      "countryCode": "CO",
+      "regionName": "Bogotá",
+      "regionCode": "11",
+      "cityName": "Bogotá",
+      "cityCode": "11001",
+      "postalCode": "110011",
+      "neighborhood": "Chapinero",
+      "phone": "1234567890",
+      "contactName": "Nombre Contacto"
+    }
+  },
+  "lines": [
+    {
+      "code": "PROD001",
+      "name": "Producto número 1",
+      "modelName": "Modelo Prueba",
+      "description": "Descrpción del producto número 1",
+      "brandName": "Marca1",
+      "itemCodeSupplier": "Supplier123",
+      "unitMeasurementCode": "94",
+      "unitMeasurementName": "Unidad",
+      "price": 10000,
+      "quantity": 5,
+      "discountAmount": 5000,
+      "chargeAmount": 5000,
+      "standardType": "001",
+      "standardCode": "10101501",
+      "discounts": [
+        {
+          "name": "Descuento por volumen",
+          "type": "P",
+          "rate": 10,
+          "amount": 1000
+        }
+      ],
+      "charges": [
+        {
+          "name": "Costo de envío",
+          "type": "F",
+          "rate": 1000,
+          "amount": 1000
+        }
+      ],
+      "taxes": [
+        {
+          "name": "IVA",
+          "code": "01",
+          "type": "P",
+          "rate": 19,
+          "amount": 1900,
+          "base": 10000
+        }
+      ],
+      "withholdings": [
+        {
+          "name": "ReteIVA",
+          "code": "05",
+          "type": "P",
+          "rate": 15,
+          "amount": 285,
+          "base": 1900
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "amount": 50000,
+    "prepaymentAmount": 0,
+    "taxesAmount": 9500,
+    "withholdingAmount": 1425,
+    "discountsAmount": 0,
+    "chargesAmount": 5000
+  },
+  "tip": {
+    "base": 50000,
+    "rate": 10,
+    "amount": 5000
+  },
+  "notes": [
+    "Nota importante 1",
+    "Nota importante 2"
+  ],
+  "remark": "Comentarios adicionales"
+}',
+   CURLOPT_HTTPHEADER => array(
+      'Authorization: Bearer <token>',
+      'Content-Type: application/json'
+   ),
+));
+
+$response = curl_exec($curl);
+
+curl_close($curl);
+echo $response;
+
+consultar documento equivalente POS por id
+<?php
+
+$curl = curl_init();
+
+curl_setopt_array($curl, array(
+   CURLOPT_URL => 'https://orka.test.aliaddo.net/v2/documents/equivalent-document/',
+   CURLOPT_RETURNTRANSFER => true,
+   CURLOPT_ENCODING => '',
+   CURLOPT_MAXREDIRS => 10,
+   CURLOPT_TIMEOUT => 0,
+   CURLOPT_FOLLOWLOCATION => true,
+   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+   CURLOPT_CUSTOMREQUEST => 'GET',
+   CURLOPT_HTTPHEADER => array(
+      'Authorization: Bearer <token>'
+   ),
+));
+
+$response = curl_exec($curl);
+
+curl_close($curl);
+echo $response;
+
+consultar docuemnto equivalente POS por prefijo y consecutivo
+
+<?php
+
+$curl = curl_init();
+
+curl_setopt_array($curl, array(
+   CURLOPT_URL => 'https://orka.test.aliaddo.net/v2/documents/equivalent-documents/find-by-prefix-and-consecutive?prefix=&consecutive=',
+   CURLOPT_RETURNTRANSFER => true,
+   CURLOPT_ENCODING => '',
+   CURLOPT_MAXREDIRS => 10,
+   CURLOPT_TIMEOUT => 0,
+   CURLOPT_FOLLOWLOCATION => true,
+   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+   CURLOPT_CUSTOMREQUEST => 'GET',
+   CURLOPT_HTTPHEADER => array(
+      'Authorization: Bearer <token>'
+   ),
+));
+
+$response = curl_exec($curl);
+
+curl_close($curl);
+echo $response;

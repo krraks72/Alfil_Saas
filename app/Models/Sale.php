@@ -12,7 +12,9 @@ class Sale extends Model
     protected $fillable = [
         'sale_number', 'created_by', 'branch_id', 'cash_register_id', 'customer_id',
         'subtotal', 'tax_amount', 'discount_amount', 'total_amount', 'paid_amount',
-        'change_amount', 'payment_method', 'status', 'notes', 'payment_details', 'sale_date'
+        'change_amount', 'payment_method', 'status', 'notes', 'payment_details', 'sale_date',
+        'aliaddo_status', 'aliaddo_document_id', 'aliaddo_prefix', 'aliaddo_consecutive',
+        'aliaddo_error'
     ];
 
     protected $casts = [
@@ -24,6 +26,7 @@ class Sale extends Model
         'change_amount' => 'decimal:2',
         'payment_details' => 'array',
         'sale_date' => 'datetime',
+        'aliaddo_consecutive' => 'integer',
     ];
 
     protected static function boot()

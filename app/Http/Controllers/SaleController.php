@@ -10,6 +10,8 @@ use App\Models\CashRegister;
 use App\Models\PosSession;
 use App\Models\PosCart;
 use App\Models\Setting;
+use App\Services\AliaddoInvoiceException;
+use App\Services\AliaddoInvoiceService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -33,7 +35,7 @@ class SaleController extends Controller
                 'discount_amount' => 'nullable|numeric|min:0',
             ]);
 
-            return DB::transaction(function () use ($request) {
+            $saleId = DB::transaction(function () use ($request) {
                 $user = auth()->user();
 
                 // Ensure cash register belongs to the company
@@ -187,8 +189,21 @@ class SaleController extends Controller
                     }
                 }
 
-                return redirect()->back()->with('success', __('Sale completed successfully'));
+                return $sale->id;
             });
+
+            $warning = null;
+            try {
+                app(AliaddoInvoiceService::class)->issueForSale(Sale::findOrFail($saleId));
+            } catch (AliaddoInvoiceException $exception) {
+                $warning = $exception->getMessage();
+            }
+
+            $redirect = redirect()->back()->with('success', __('Sale completed successfully'));
+
+            return $warning
+                ? $redirect->with('warning', __('The sale was completed, but its electronic invoice was not issued: :reason', ['reason' => $warning]))
+                : $redirect;
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage() ?: __('Failed to complete sale'));
         }

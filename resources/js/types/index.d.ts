@@ -3,9 +3,18 @@ import * as LucidIcons from 'lucide-react';
 
 export interface NavItem {
   title: string;
-  href: string;
-  icon: LucideIcon;
+  href?: string;
+  icon?: LucideIcon;
   permission?: string;
+  children?: NavItem[];
+  target?: string;
+  external?: boolean;
+  defaultOpen?: boolean;
+  group?: string;
+  badge?: {
+    label: string;
+    variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost';
+  };
 }
 
 export interface TableColumn {

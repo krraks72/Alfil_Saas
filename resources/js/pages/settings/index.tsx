@@ -30,6 +30,7 @@ import SeoSettings from './components/seo-settings';
 import CacheSettings from './components/cache-settings';
 import GoogleCalendarSettings from './components/google-calendar-settings';
 import QuotationInvoiceSettings from './components/quotation-invoice-settings';
+import AliaddoSettings from './components/aliaddo-settings';
 
 import { Toaster } from '@/components/ui/toaster';
 import { useTranslation } from 'react-i18next';
@@ -39,7 +40,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 export default function Settings() {
   const { t } = useTranslation();
-  const { systemSettings = {}, cacheSize = '0.00', timezones = {}, dateFormats = {}, timeFormats = {}, paymentSettings = {}, webhooks = [], auth = {} } = usePage().props as any;
+  const { systemSettings = {}, cacheSize = '0.00', timezones = {}, dateFormats = {}, timeFormats = {}, paymentSettings = {}, webhooks = [], auth = {}, aliaddoSettings = {} } = usePage().props as any;
   const [activeSection, setActiveSection] = useState('system-settings');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { position } = useLayout();
@@ -157,6 +158,11 @@ export default function Settings() {
       href: '#quotation-invoice-settings',
       icon: <FileText className="h-4 w-4 mr-2" />
     },
+    {
+      title: t('Electronic Invoicing (Aliaddo)'),
+      href: '#aliaddo-settings',
+      icon: <FileText className="h-4 w-4 mr-2" />
+    },
 
 
   ];
@@ -198,6 +204,9 @@ export default function Settings() {
     }
     // Show Quotation Settings for company users only
     if (item.href === '#quotation-invoice-settings' && auth.user?.type === 'company') {
+      return true;
+    }
+    if (item.href === '#aliaddo-settings' && auth.user?.type === 'company') {
       return true;
     }
     // Hide Storage Settings from company users
@@ -266,6 +275,7 @@ export default function Settings() {
   const cacheSettingsRef = useRef<HTMLDivElement>(null);
   const googleCalendarSettingsRef = useRef<HTMLDivElement>(null);
   const quotationInvoiceSettingsRef = useRef<HTMLDivElement>(null);
+  const aliaddoSettingsRef = useRef<HTMLDivElement>(null);
 
 
 
@@ -296,11 +306,14 @@ export default function Settings() {
       const cacheSettingsPosition = cacheSettingsRef.current?.offsetTop || 0;
       const googleCalendarSettingsPosition = googleCalendarSettingsRef.current?.offsetTop || 0;
       const quotationInvoiceSettingsPosition = quotationInvoiceSettingsRef.current?.offsetTop || 0;
+      const aliaddoSettingsPosition = aliaddoSettingsRef.current?.offsetTop || 0;
 
 
 
       // Determine active section based on scroll position
-      if (scrollPosition >= quotationInvoiceSettingsPosition && quotationInvoiceSettingsPosition > 0) {
+      if (scrollPosition >= aliaddoSettingsPosition && aliaddoSettingsPosition > 0) {
+        setActiveSection('aliaddo-settings');
+      } else if (scrollPosition >= quotationInvoiceSettingsPosition && quotationInvoiceSettingsPosition > 0) {
         setActiveSection('quotation-invoice-settings');
       } else if (scrollPosition >= googleCalendarSettingsPosition && googleCalendarSettingsPosition > 0) {
         setActiveSection('google-calendar-settings');
@@ -419,19 +432,23 @@ export default function Settings() {
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-                {sidebarNavItems.map((item) => (
-                  <Button
-                    key={item.href}
-                    variant="ghost"
-                    className={cn('w-full justify-start text-xs sm:text-sm', {
-                      'bg-muted font-medium': activeSection === item.href.replace('#', ''),
-                    })}
-                    onClick={() => handleNavClick(item.href)}
-                  >
-                    {item.icon}
-                    <span className="truncate">{item.title}</span>
-                  </Button>
-                ))}
+                {sidebarNavItems.map((item) => {
+                  const href = item.href ?? '#';
+
+                  return (
+                    <Button
+                      key={href}
+                      variant="ghost"
+                      className={cn('w-full justify-start text-xs sm:text-sm', {
+                        'bg-muted font-medium': activeSection === href.replace('#', ''),
+                      })}
+                      onClick={() => handleNavClick(href)}
+                    >
+                      {item.icon}
+                      <span className="truncate">{item.title}</span>
+                    </Button>
+                  );
+                })}
               </div>
             </ScrollArea>
           </div>
@@ -587,6 +604,11 @@ export default function Settings() {
             {(auth.user?.type === 'company') && (
               <section id="quotation-invoice-settings" ref={quotationInvoiceSettingsRef} className="mb-8">
                 <QuotationInvoiceSettings settings={systemSettings} />
+              </section>
+            )}
+            {(auth.user?.type === 'company') && (
+              <section id="aliaddo-settings" ref={aliaddoSettingsRef} className="mb-8">
+                <AliaddoSettings settings={aliaddoSettings} />
               </section>
             )}
           </div>

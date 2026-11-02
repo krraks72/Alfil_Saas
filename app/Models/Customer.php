@@ -12,7 +12,9 @@ class Customer extends Model
         'created_by', 'name', 'email', 'phone', 'date_of_birth', 'gender',
         'billing_address', 'billing_city', 'billing_state', 'billing_postal_code', 'billing_country',
         'shipping_address', 'shipping_city', 'shipping_state', 'shipping_postal_code', 'shipping_country',
-        'same_as_billing', 'status', 'notes'
+        'same_as_billing', 'status', 'notes', 'identification', 'first_name', 'last_name', 'digit_check',
+        'identification_type_code', 'person_type', 'regime_type', 'responsible_for',
+        'responsibilities', 'billing_region_code', 'billing_city_code', 'economic_activities',
     ];
 
     protected $casts = [

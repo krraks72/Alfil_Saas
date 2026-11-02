@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 
 class CheckInstallation
 {
@@ -33,11 +32,6 @@ class CheckInstallation
             return redirect('/install');
         }
 
-        // If logged in as superadmin and migrations needed, redirect to /update
-        if (auth()->check() && auth()->user()->hasRole('superadmin') && $this->needsMigration()) {
-            return redirect('/update');
-        }
-
         return $next($request);
     }
 
@@ -49,17 +43,4 @@ class CheckInstallation
         return file_exists(storage_path('installed'));
     }
 
-    /**
-     * Check if migrations are needed
-     */
-    private function needsMigration(): bool
-    {
-        try {
-            Artisan::call('migrate:status');
-            $output = Artisan::output();
-            return strpos($output, 'Pending') !== false;
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
 }

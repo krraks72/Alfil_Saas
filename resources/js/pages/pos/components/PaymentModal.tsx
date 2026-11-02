@@ -115,6 +115,8 @@ export default function PaymentModal({
             onSuccess: async (response) => {
                 setProcessing(false);
                 toast.success(t('Sale completed successfully!'));
+                const flash = (response.props as any).flash;
+                if (flash?.warning) toast.error(flash.warning);
 
                 // Fetch the latest sale for this cash register to get actual data
                 try {

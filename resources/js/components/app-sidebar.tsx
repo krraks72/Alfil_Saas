@@ -7,7 +7,7 @@ import { useSidebarSettings } from '@/contexts/SidebarContext';
 import { useBrand } from '@/contexts/BrandContext';
 import { type NavItem } from '@/types';
 import { Link, usePage, router } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, ShoppingBag, Package, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar as CalendarIcon, CreditCard, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, ChevronDown, Building2, Globe, Calculator, Receipt, Search, X, ChevronRight, LogOut, TicketPercent } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, ShoppingBag, Package, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar as CalendarIcon, CreditCard, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, ChevronDown, Building2, Globe, Calculator, Receipt, Search, X, ChevronRight, LogOut, TicketPercent, Database } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import AppLogo from './app-logo';
@@ -123,6 +123,12 @@ export function AppSidebar() {
             title: t('Settings'),
             href: route('settings'),
             icon: Settings,
+            group: t('System Control')
+        },
+        {
+            title: t('Database Updates'),
+            href: route('superadmin.database-updates.index'),
+            icon: Database,
             group: t('System Control')
         }
     ];
@@ -490,7 +496,7 @@ export function AppSidebar() {
         return items;
     };
 
-    const mainNavItems = userRole === 'superadmin' ? getSuperAdminNavItems() : getCompanyNavItems();
+    const mainNavItems = ['superadmin', 'super admin'].includes(userRole) ? getSuperAdminNavItems() : getCompanyNavItems();
 
     const { position, effectivePosition } = useLayout();
     const { variant, collapsible, style } = useSidebarSettings();

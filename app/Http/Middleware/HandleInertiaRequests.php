@@ -148,6 +148,7 @@ class HandleInertiaRequests extends Middleware
 
             // Get superadmin enableLogging setting for cookie consent
             $superAdminEnableLogging = false;
+            $registrationEnabled = false;
             try {
                 $superAdmin = User::where('type', 'superadmin')->first();
                 if ($superAdmin) {
@@ -229,6 +230,7 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error'   => $request->session()->get('error'),
+                'info'    => $request->session()->get('info'),
             ],
             'globalSettings' => $globalSettings,
             'languages' => $availableLanguages,

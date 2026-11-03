@@ -52,7 +52,7 @@ return [
         'storage/app/'           => '775',
         'storage/app/public/'    => '775',
         'bootstrap/cache/'       => '775',
-        'public/storage/'        => '775',
+        'public_html/storage/'   => '775',
         'storage/uploads/'       => '775',
         'resources/lang/'        => '775',
     ],

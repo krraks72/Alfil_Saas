@@ -235,6 +235,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'delete-products', 'module' => 'products', 'label' => 'Delete Products', 'description' => 'Can delete products'],
             ['name' => 'manage-product-status', 'module' => 'products', 'label' => 'Manage Product Status', 'description' => 'Can manage product status'],
             ['name' => 'export-products', 'module' => 'products', 'label' => 'Export Products', 'description' => 'Can export products'],
+            ['name' => 'view-processed-products', 'module' => 'products', 'label' => 'View Processed Products', 'description' => 'Can view processed products'],
 
             // Expense Category management
             ['name' => 'view-expense-categories', 'module' => 'expense_categories', 'label' => 'View Expense Categories', 'description' => 'Can view expense categories'],
@@ -321,6 +322,7 @@ class PermissionSeeder extends Seeder
 
             // Branch Sales Target management
             ['name' => 'manage_branch_sales_target', 'module' => 'branch_sales_targets', 'label' => 'Manage Branch Sales Targets', 'description' => 'Can manage branch sales targets'],
+            ['name' => 'view_branch_sales_target', 'module' => 'branch_sales_targets', 'label' => 'View Branch Sales Targets', 'description' => 'Can view branch sales targets'],
             ['name' => 'create_branch_sales_target', 'module' => 'branch_sales_targets', 'label' => 'Create Branch Sales Targets', 'description' => 'Can create branch sales targets'],
             ['name' => 'edit_branch_sales_target', 'module' => 'branch_sales_targets', 'label' => 'Edit Branch Sales Targets', 'description' => 'Can edit branch sales targets'],
             ['name' => 'delete_branch_sales_target', 'module' => 'branch_sales_targets', 'label' => 'Delete Branch Sales Targets', 'description' => 'Can delete branch sales targets'],

@@ -6,7 +6,9 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Branch;
 use App\Models\CashRegister;
 use App\Models\Category;
+use App\Models\CommerceType;
 use App\Models\Customer;
+use App\Models\Plan;
 use App\Models\ProcessedProduct;
 use App\Models\Product;
 use App\Models\Unit;
@@ -17,12 +19,38 @@ use Spatie\Permission\Models\Permission;
 beforeEach(function () {
     $this->withoutMiddleware([CheckInstallation::class, CheckPlanAccess::class, HandleInertiaRequests::class]);
     $this->company = User::factory()->create(['type' => 'company']);
-    $this->company->givePermissionTo([
+    $permissions = [
         Permission::findOrCreate('view-products', 'web'),
+        Permission::findOrCreate('view-processed-products', 'web'),
         Permission::findOrCreate('create-products', 'web'),
         Permission::findOrCreate('view-pos', 'web'),
         Permission::findOrCreate('create-sales', 'web'),
+    ];
+    $this->company->givePermissionTo($permissions);
+
+    $commerceType = CommerceType::create([
+        'name' => 'Processed Products Test Commerce',
+        'permissions_initialized' => true,
     ]);
+    $plan = Plan::create([
+        'name' => 'Processed Products Test Plan',
+        'price' => 0,
+        'duration' => 'monthly',
+        'total_customers' => 0,
+        'total_vendors' => 0,
+        'max_users' => 5,
+        'storage_limit' => 5,
+        'is_plan_enable' => 'on',
+        'is_default' => false,
+        'commerce_type_id' => $commerceType->id,
+    ]);
+    $this->company->update([
+        'plan_id' => $plan->id,
+        'plan_is_active' => 1,
+        'plan_expire_date' => now()->addMonth(),
+    ]);
+    $commerceType->permissions()->sync(collect($permissions)->pluck('id'));
+
     $this->actingAs($this->company);
 
     $this->category = Category::create([

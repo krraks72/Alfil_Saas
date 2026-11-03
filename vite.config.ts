@@ -28,6 +28,7 @@ export default defineConfig({
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/css/dark-mode.css', 'resources/js/app.tsx'],
+            publicDirectory: 'public_html',
             ssr: 'resources/js/ssr.tsx',
             refresh: true,
         }),

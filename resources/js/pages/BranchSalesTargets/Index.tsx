@@ -774,8 +774,8 @@ export default function Index({ targets, branches, summary, filters, can }: Prop
                     ];
 
                     const actions = [
-                        { label: 'Edit', icon: 'Edit', action: 'edit', className: 'text-amber-500', requiredPermission: 'edit-branch-sales-target' },
-                        { label: 'Delete', icon: 'Trash2', action: 'delete', className: 'text-red-500', requiredPermission: 'delete-branch-sales-target' }
+                        { label: 'Edit', icon: 'Edit', action: 'edit', className: 'text-amber-500', requiredPermission: 'edit_branch_sales_target' },
+                        { label: 'Delete', icon: 'Trash2', action: 'delete', className: 'text-red-500', requiredPermission: 'delete_branch_sales_target' }
                     ];
 
                     const handleTableAction = (action: string, item: any) => {
@@ -795,16 +795,15 @@ export default function Index({ targets, branches, summary, filters, can }: Prop
                                 data={targets?.data || []}
                                 from={targets?.from || 1}
                                 onAction={handleTableAction}
-                                permissions={Object.keys(can).filter(key => can[key as keyof typeof can]).map(key => {
-                                    if (key === 'edit') return 'edit-branch-sales-target';
-                                    if (key === 'delete') return 'delete-branch-sales-target';
-                                    if (key === 'create') return 'create-branch-sales-target';
-                                    return `${key}-branch-sales-target`;
-                                })}
+                                permissions={[
+                                    ...(can.create ? ['create_branch_sales_target'] : []),
+                                    ...(can.edit ? ['edit_branch_sales_target'] : []),
+                                    ...(can.delete ? ['delete_branch_sales_target'] : []),
+                                ]}
                                 entityPermissions={{
-                                    view: 'view-branch-sales-target',
-                                    edit: 'edit-branch-sales-target',
-                                    delete: 'delete-branch-sales-target'
+                                    view: 'view_branch_sales_target',
+                                    edit: 'edit_branch_sales_target',
+                                    delete: 'delete_branch_sales_target'
                                 }}
                             />
                             <Pagination

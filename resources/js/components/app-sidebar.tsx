@@ -336,6 +336,8 @@ export function AppSidebar() {
                 title: t('Products'),
                 href: route('products.index')
             });
+        }
+        if (hasPermission(permissions, 'view-processed-products')) {
             productChildren.push({
                 title: t('Processed Products'),
                 href: route('processed-products.index')
@@ -417,7 +419,7 @@ export function AppSidebar() {
                 href: route('cash-registers.index')
             });
         }
-        if (hasPermission(permissions, 'manage_branch_sales_target')) {
+        if (hasPermission(permissions, 'view_branch_sales_target') || hasPermission(permissions, 'manage_branch_sales_target')) {
             posChildren.push({
                 title: t('Branch Sales Targets'),
                 href: route('branch-sales-targets.index')

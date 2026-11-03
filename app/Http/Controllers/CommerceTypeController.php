@@ -11,6 +11,8 @@ use Illuminate\Validation\ValidationException;
 
 class CommerceTypeController extends Controller
 {
+    private const EXTRA_COMMERCE_TYPE_PERMISSIONS = ['manage-settings'];
+
     public function index()
     {
         return Inertia::render('commerce-types/index', [
@@ -59,6 +61,10 @@ class CommerceTypeController extends Controller
 
     public function destroy(CommerceType $commerceType)
     {
+        if (CommerceType::count() <= 1) {
+            return back()->with('error', __('At least one commerce type must remain.'));
+        }
+
         if ($commerceType->plans()->exists()) {
             return back()->with('error', __('A commerce type assigned to a plan cannot be deleted.'));
         }
@@ -73,7 +79,10 @@ class CommerceTypeController extends Controller
     {
         return Permission::query()
             ->where('guard_name', 'web')
-            ->whereIn('module', config('role-permissions.company', []))
+            ->where(function ($query) {
+                $query->whereIn('module', config('role-permissions.company', []))
+                    ->orWhereIn('name', self::EXTRA_COMMERCE_TYPE_PERMISSIONS);
+            })
             ->orderBy('module')
             ->orderBy('label')
             ->get(['id', 'name', 'label', 'module', 'description'])
@@ -100,7 +109,10 @@ class CommerceTypeController extends Controller
             'permissions.*' => ['integer', Rule::exists('permissions', 'id')->where(
                 fn ($query) => $query
                     ->where('guard_name', 'web')
-                    ->whereIn('module', config('role-permissions.company', []))
+                    ->where(function ($query) {
+                        $query->whereIn('module', config('role-permissions.company', []))
+                            ->orWhereIn('name', self::EXTRA_COMMERCE_TYPE_PERMISSIONS);
+                    })
             )],
         ]);
 

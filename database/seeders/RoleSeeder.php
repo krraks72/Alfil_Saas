@@ -141,7 +141,8 @@ class RoleSeeder extends Seeder
             'edit-products',
             'delete-products',
             'manage-product-status',
-            'export-products',            
+            'export-products',
+            'view-processed-products',
             // Expense Category permissions
             'view-expense-categories',
             'create-expense-categories',
@@ -218,6 +219,7 @@ class RoleSeeder extends Seeder
             'manage-notification-template-settings',
             // Branch Sales Target
             'manage_branch_sales_target',
+            'view_branch_sales_target',
             'create_branch_sales_target',
             'edit_branch_sales_target',
             'delete_branch_sales_target',

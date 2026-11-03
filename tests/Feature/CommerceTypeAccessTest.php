@@ -1,10 +1,13 @@
 <?php
 
 use App\Http\Middleware\CheckInstallation;
+use App\Http\Middleware\CheckPlanAccess;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\CommerceType;
 use App\Models\Plan;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
+use Database\Seeders\PlanSeeder;
 use Spatie\Permission\Models\Permission;
 
 beforeEach(function () {
@@ -71,7 +74,69 @@ test('calendar routes are denied when the commerce type does not allow the calen
         ->assertForbidden();
 });
 
+test('processed products require their own commerce type permission', function () {
+    $this->withoutMiddleware(CheckInstallation::class);
+    app(PermissionSeeder::class)->run();
+    $permission = Permission::findByName('view-processed-products', 'web');
+    $this->company->givePermissionTo($permission);
+
+    $this->actingAs($this->company)
+        ->get(route('processed-products.index'))
+        ->assertForbidden();
+
+    $this->commerceType->permissions()->sync([$permission->id]);
+
+    $this->actingAs($this->company)
+        ->get(route('processed-products.index'))
+        ->assertOk();
+});
+
+test('branch sales target access and actions use commerce type permissions', function () {
+    $this->withoutMiddleware([CheckInstallation::class, CheckPlanAccess::class, HandleInertiaRequests::class]);
+    app(PermissionSeeder::class)->run();
+    $permissions = collect([
+        'view_branch_sales_target',
+        'create_branch_sales_target',
+        'edit_branch_sales_target',
+        'delete_branch_sales_target',
+    ])->map(fn ($name) => Permission::findByName($name, 'web'));
+    $this->company->givePermissionTo($permissions);
+
+    $this->actingAs($this->company)
+        ->get(route('branch-sales-targets.index'))
+        ->assertForbidden();
+
+    $this->commerceType->permissions()->sync([$permissions->first()->id]);
+
+    $this->actingAs($this->company)
+        ->withHeader('X-Inertia', 'true')
+        ->get(route('branch-sales-targets.index'))
+        ->assertOk()
+        ->assertJsonPath('props.can.create', false)
+        ->assertJsonPath('props.can.edit', false)
+        ->assertJsonPath('props.can.delete', false);
+
+    $this->post(route('branch-sales-targets.store'), [])
+        ->assertForbidden();
+    $this->put(route('branch-sales-targets.update', 1), [])
+        ->assertForbidden();
+    $this->delete(route('branch-sales-targets.destroy', 1))
+        ->assertForbidden();
+
+    $this->commerceType->permissions()->sync($permissions->pluck('id')->all());
+
+    $this->actingAs($this->company)
+        ->withHeader('X-Inertia', 'true')
+        ->get(route('branch-sales-targets.index'))
+        ->assertOk()
+        ->assertJsonPath('props.can.create', true)
+        ->assertJsonPath('props.can.edit', true)
+        ->assertJsonPath('props.can.delete', true);
+});
+
 test('only superadmins can open the commerce type administration panel', function () {
+    app(PermissionSeeder::class)->run();
+
     $this->actingAs(User::factory()->create(['type' => 'company']))
         ->get(route('superadmin.commerce-types.index'))
         ->assertRedirect();
@@ -79,15 +144,66 @@ test('only superadmins can open the commerce type administration panel', functio
     $this->actingAs(User::factory()->create(['type' => 'superadmin']))
         ->get(route('superadmin.commerce-types.index'))
         ->assertOk()
-        ->assertInertia(fn ($page) => $page->component('commerce-types/index'));
+        ->assertInertia(fn ($page) => $page
+            ->component('commerce-types/index')
+            ->where('permissionGroups', function ($groups) {
+                $groups = collect($groups);
+
+                return $groups->contains(
+                    fn ($group) => $group['module'] === 'products'
+                        && collect($group['permissions'])->contains(
+                            fn ($permission) => $permission['name'] === 'view-processed-products'
+                        )
+                ) && $groups->contains(
+                    fn ($group) => $group['module'] === 'settings'
+                        && collect($group['permissions'])->pluck('name')->all() === ['manage-settings']
+                );
+            }));
+});
+
+test('superadmins can configure commerce type permissions', function () {
+    app(PermissionSeeder::class)->run();
+    $superadmin = User::factory()->create(['type' => 'superadmin']);
+    $permission = Permission::findByName('view-appointments', 'web');
+    $settingsPermission = Permission::findByName('manage-settings', 'web');
+
+    $this->actingAs($superadmin)
+        ->post(route('superadmin.commerce-types.store'), [
+            'name' => 'Restaurant',
+            'description' => 'Restaurant commerce',
+            'permissions' => [$permission->id, $settingsPermission->id],
+        ])
+        ->assertRedirect(route('superadmin.commerce-types.index'));
+
+    $commerceType = CommerceType::where('name', 'Restaurant')->firstOrFail();
+    expect($commerceType->permissions()->whereKey($permission->id)->exists())->toBeTrue();
+    expect($commerceType->permissions()->whereKey($settingsPermission->id)->exists())->toBeTrue();
+
+    $systemSettingsPermission = Permission::findByName('manage-system-settings', 'web');
+    $this->put(route('superadmin.commerce-types.update', $commerceType), [
+        'name' => 'Restaurant',
+        'description' => 'Updated restaurant',
+        'permissions' => [$systemSettingsPermission->id],
+    ])->assertSessionHasErrors('permissions.0');
+
+    $this->put(route('superadmin.commerce-types.update', $commerceType), [
+        'name' => 'Restaurant',
+        'description' => 'Updated restaurant',
+        'permissions' => [],
+    ])->assertRedirect(route('superadmin.commerce-types.index'));
+
+    expect($commerceType->fresh()->permissions()->exists())->toBeFalse();
 });
 
 test('default commerce types are initialized with company permissions during seeding', function () {
     app(PermissionSeeder::class)->run();
+    app(PlanSeeder::class)->run();
 
     $store = CommerceType::where('name', 'Tienda')->firstOrFail();
     $posPermission = Permission::findByName('view-pos', 'web');
+    $freePlan = Plan::where('name', 'Free')->firstOrFail();
 
     expect($store->permissions_initialized)->toBeTrue()
-        ->and($store->permissions()->whereKey($posPermission->id)->exists())->toBeTrue();
+        ->and($store->permissions()->whereKey($posPermission->id)->exists())->toBeTrue()
+        ->and($freePlan->commerce_type_id)->toBe($store->id);
 });

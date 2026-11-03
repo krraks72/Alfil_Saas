@@ -1,9 +1,9 @@
 /.phpunit.cache
 /bootstrap/ssr
 /node_modules
-/public/build
-/public/hot
-/public/storage
+/public_html/build
+/public_html/hot
+/public_html/storage
 /storage/*.key
 /storage/installed
 /storage/pail
@@ -22,7 +22,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-/public/screenshots
+/public_html/screenshots
 .env
 /storage/framework/*
 /storage/logs/*

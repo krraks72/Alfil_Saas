@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { router, useForm, usePage } from '@inertiajs/react';
+import { toast } from '@/components/custom-toast';
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { router, useForm, usePage } from '@inertiajs/react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from '@/components/custom-toast';
 
 interface Permission {
     id: number;
@@ -34,8 +34,143 @@ interface Props {
     permissionGroups: PermissionGroup[];
 }
 
+const spanishModuleLabels: Record<string, string> = {
+    dashboard: 'Panel de control',
+    users: 'Usuarios',
+    roles: 'Roles',
+    appointments: 'Calendario',
+    notification_templates: 'Plantillas de notificación',
+    branches: 'Sucursales',
+    cash_registers: 'Cajas registradoras',
+    customers: 'Clientes',
+    vendors: 'Proveedores',
+    brands: 'Marcas',
+    categories: 'Categorías',
+    taxes: 'Impuestos',
+    units: 'Unidades',
+    products: 'Productos',
+    expense_categories: 'Categorías de gastos',
+    expenses: 'Gastos',
+    pos: 'Punto de venta',
+    sales: 'Ventas',
+    purchases: 'Compras',
+    reports: 'Informes',
+    branch_sales_targets: 'Objetivos de ventas por sucursal',
+    quotations: 'Cotizaciones',
+    sale_returns: 'Devoluciones de ventas',
+    'purchase-returns': 'Devoluciones de compras',
+    media: 'Archivos multimedia',
+    settings: 'Ajustes de la',
+};
+
+const spanishPermissionActions: Record<string, string> = {
+    'Manage ': 'Administrar ',
+    'View ': 'Ver ',
+    'Create ': 'Crear ',
+    'Edit ': 'Editar ',
+    'Delete ': 'Eliminar ',
+    'Reset Password ': 'Restablecer contraseña de ',
+    'Change Status ': 'Cambiar estado de ',
+    'Show ': 'Ver ',
+    'Download ': 'Descargar ',
+    'Export ': 'Exportar ',
+    'Import ': 'Importar ',
+    'Approve ': 'Aprobar ',
+    'Reject ': 'Rechazar ',
+    'Send ': 'Enviar ',
+    'Convert ': 'Convertir ',
+    'Apply ': 'Aplicar ',
+    'Process ': 'Procesar ',
+};
+
+const spanishPermissionSubjects: Record<string, string> = {
+    'Manage Dashboard': 'Administrar el panel de control',
+    'Can view dashboard': 'Puede ver el panel de control',
+    'Manage Settings': 'Administrar ajustes',
+    'Can manage All settings': 'Puede administrar todos los ajustes',
+    'Manage Login History': 'Administrar el historial de inicio de sesión',
+    'Can manage login history': 'Puede administrar el historial de inicio de sesión',
+    'Show Login History': 'Ver el historial de inicio de sesión',
+    'Can view login history': 'Puede ver el historial de inicio de sesión',
+    'Delete Login History': 'Eliminar el historial de inicio de sesión',
+    'Can delete login history': 'Puede eliminar el historial de inicio de sesión',
+    'Manage All Media': 'Administrar todos los archivos multimedia',
+    'Manage Any media': 'Administrar cualquier archivo multimedia',
+    'Manage Own Media': 'Administrar los archivos multimedia propios',
+    'Manage Limited media that is created by own': 'Administrar los archivos multimedia propios',
+    'Can manage media': 'Puede administrar archivos multimedia',
+    'Can manage Any media': 'Puede administrar cualquier archivo multimedia',
+    'Can manage Limited media that is created by own': 'Puede administrar los archivos multimedia propios',
+    'Can create media': 'Puede crear archivos multimedia',
+    'Can edit media': 'Puede editar archivos multimedia',
+    'Can delete media': 'Puede eliminar archivos multimedia',
+    'Can view media': 'Puede ver archivos multimedia',
+    'Can download media': 'Puede descargar archivos multimedia',
+    'Can access POS interface': 'Puede acceder a la interfaz del punto de venta',
+    'Can create sales transactions': 'Puede crear transacciones de venta',
+    'Can apply discounts to sales': 'Puede aplicar descuentos a las ventas',
+    'Can convert quotations to sales': 'Puede convertir cotizaciones en ventas',
+    'Can view calendar events': 'Puede ver los eventos del calendario',
+    'Can process refunds': 'Puede procesar reembolsos',
+    'Create Sales': 'Crear ventas',
+    'View POS': 'Ver punto de venta',
+    'Apply Discounts': 'Aplicar descuentos',
+    'Process Refunds': 'Procesar reembolsos',
+    'Manage Branch Status': 'Administrar el estado de las sucursales',
+    'Can manage branch status': 'Puede administrar el estado de las sucursales',
+    'Manage Cash Register Status': 'Administrar el estado de las cajas registradoras',
+    'Can manage cash register status': 'Puede administrar el estado de las cajas registradoras',
+    'Manage Customer Status': 'Administrar el estado de los clientes',
+    'Can manage customer status': 'Puede administrar el estado de los clientes',
+    'Manage Vendor Status': 'Administrar el estado de los proveedores',
+    'Can manage vendor status': 'Puede administrar el estado de los proveedores',
+    'Manage Brand Status': 'Administrar el estado de las marcas',
+    'Can manage brand status': 'Puede administrar el estado de las marcas',
+    'Manage Category Status': 'Administrar el estado de las categorías',
+    'Can manage category status': 'Puede administrar el estado de las categorías',
+    'Manage Tax Status': 'Administrar el estado de los impuestos',
+    'Can manage tax status': 'Puede administrar el estado de los impuestos',
+    'Manage Unit Status': 'Administrar el estado de las unidades',
+    'Can manage unit status': 'Puede administrar el estado de las unidades',
+    'Manage Product Status': 'Administrar el estado de los productos',
+    'Can manage product status': 'Puede administrar el estado de los productos',
+    'Manage Expense Category Status': 'Administrar el estado de las categorías de gastos',
+    'Can manage expense category status': 'Puede administrar el estado de las categorías de gastos',
+    'Manage Purchase Status': 'Administrar el estado de las compras',
+    'Can manage purchase status': 'Puede administrar el estado de las compras',
+    'Manage POS Sessions': 'Administrar las sesiones del punto de venta',
+    'Can manage POS sessions': 'Puede administrar las sesiones del punto de venta',
+    'Manage Notification Template Settings': 'Administrar la configuración de las plantillas de notificación',
+    'Can manage notification template settings': 'Puede administrar la configuración de las plantillas de notificación',
+    'Manage Branch Sales Targets': 'Administrar los objetivos de ventas por sucursal',
+    'Can manage branch sales targets': 'Puede administrar los objetivos de ventas por sucursal',
+};
+
+function translatePermissionText(text: string, module: string, isSpanish: boolean): string {
+    if (!isSpanish) return text;
+    if (spanishPermissionSubjects[text]) return spanishPermissionSubjects[text];
+
+    const action = Object.keys(spanishPermissionActions).find((prefix) => text.toLowerCase().startsWith(prefix.toLowerCase()));
+    const subject = spanishModuleLabels[module] ?? module;
+    if (text.startsWith('Can ')) {
+        const descriptionAction = text.slice(4).replace(/^./, (character) => character.toUpperCase());
+        const translatedLabel = translatePermissionText(descriptionAction, module, true);
+        return `Puede ${translatedLabel.charAt(0).toLowerCase()}${translatedLabel.slice(1)}`;
+    }
+
+    if (action) {
+        const prefix = spanishPermissionActions[action];
+        if (text.endsWith(' Status')) return `${prefix}el estado de ${subject.toLowerCase()}`;
+        if (text.endsWith(' Settings')) return `${prefix}la configuración de ${subject.toLowerCase()}`;
+        return `${prefix}${subject.toLowerCase()}`;
+    }
+
+    return text;
+}
+
 export default function CommerceTypesIndex({ commerceTypes, permissionGroups }: Props) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isSpanish = i18n.resolvedLanguage?.startsWith('es') ?? false;
     const { flash } = usePage().props as any;
     const [editingType, setEditingType] = useState<CommerceType | null>(null);
     const { data, setData, post, put, processing, errors, reset } = useForm<{
@@ -68,16 +203,12 @@ export default function CommerceTypesIndex({ commerceTypes, permissionGroups }: 
     };
 
     const togglePermission = (permissionId: number, checked: boolean) => {
-        setData('permissions', checked
-            ? [...data.permissions, permissionId]
-            : data.permissions.filter((id) => id !== permissionId));
+        setData('permissions', checked ? [...data.permissions, permissionId] : data.permissions.filter((id) => id !== permissionId));
     };
 
     const toggleGroup = (group: PermissionGroup, checked: boolean) => {
         const groupIds = group.permissions.map((permission) => permission.id);
-        const permissions = checked
-            ? [...new Set([...data.permissions, ...groupIds])]
-            : data.permissions.filter((id) => !groupIds.includes(id));
+        const permissions = checked ? [...new Set([...data.permissions, ...groupIds])] : data.permissions.filter((id) => !groupIds.includes(id));
         setData('permissions', permissions);
     };
 
@@ -107,10 +238,7 @@ export default function CommerceTypesIndex({ commerceTypes, permissionGroups }: 
         }
     };
 
-    const breadcrumbs = [
-        { title: t('Dashboard'), href: route('dashboard') },
-        { title: t('Commerce types') },
-    ];
+    const breadcrumbs = [{ title: t('Dashboard'), href: route('dashboard') }, { title: t('Commerce types') }];
 
     return (
         <PageTemplate
@@ -128,11 +256,10 @@ export default function CommerceTypesIndex({ commerceTypes, permissionGroups }: 
                             <div className="flex items-start justify-between gap-4">
                                 <div>
                                     <h3 className="font-semibold">{commerceType.name}</h3>
-                                    {commerceType.description && (
-                                        <p className="mt-1 text-sm text-muted-foreground">{commerceType.description}</p>
-                                    )}
-                                    <p className="mt-2 text-xs text-muted-foreground">
-                                        {t('{{count}} plans assigned', { count: commerceType.plan_count })} · {t('{{count}} enabled options', { count: commerceType.permissions.length })}
+                                    {commerceType.description && <p className="text-muted-foreground mt-1 text-sm">{commerceType.description}</p>}
+                                    <p className="text-muted-foreground mt-2 text-xs">
+                                        {t('{{count}} plans assigned', { count: commerceType.plan_count })} ·{' '}
+                                        {t('{{count}} enabled options', { count: commerceType.permissions.length })}
                                     </p>
                                 </div>
                                 <div className="flex shrink-0 gap-2">
@@ -143,7 +270,7 @@ export default function CommerceTypesIndex({ commerceTypes, permissionGroups }: 
                                         type="button"
                                         variant="destructive"
                                         size="sm"
-                                        disabled={commerceType.plan_count > 0}
+                                        disabled={commerceType.plan_count > 0 || commerceTypes.length <= 1}
                                         onClick={() => deleteType(commerceType)}
                                     >
                                         {t('Delete')}
@@ -156,12 +283,8 @@ export default function CommerceTypesIndex({ commerceTypes, permissionGroups }: 
 
                 <form onSubmit={submit} className="space-y-5 rounded-lg border bg-white p-5 shadow-sm">
                     <div>
-                        <h2 className="text-lg font-semibold">
-                            {editingType ? t('Edit commerce type') : t('New commerce type')}
-                        </h2>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            {t('Select the options that plans of this type can provide.')}
-                        </p>
+                        <h2 className="text-lg font-semibold">{editingType ? t('Edit commerce type') : t('New commerce type')}</h2>
+                        <p className="text-muted-foreground mt-1 text-sm">{t('Select the options that plans of this type can provide.')}</p>
                     </div>
 
                     <div className="space-y-2">
@@ -173,7 +296,7 @@ export default function CommerceTypesIndex({ commerceTypes, permissionGroups }: 
                             required
                             maxLength={100}
                         />
-                        {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                        {errors.name && <p className="text-destructive text-sm">{errors.name}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -185,7 +308,7 @@ export default function CommerceTypesIndex({ commerceTypes, permissionGroups }: 
                             maxLength={1000}
                             rows={2}
                         />
-                        {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
+                        {errors.description && <p className="text-destructive text-sm">{errors.description}</p>}
                     </div>
 
                     <div className="space-y-4">
@@ -194,13 +317,11 @@ export default function CommerceTypesIndex({ commerceTypes, permissionGroups }: 
                             const allSelected = group.permissions.every((permission) => data.permissions.includes(permission.id));
                             return (
                                 <fieldset key={group.module} className="rounded-md border p-4">
-                                    <legend className="px-1 font-medium">{t(group.label)}</legend>
+                                    <legend className="px-1 font-medium">
+                                        {isSpanish ? (spanishModuleLabels[group.module] ?? t(group.label)) : t(group.label)}
+                                    </legend>
                                     <label className="mb-3 flex items-center gap-2 text-sm font-medium">
-                                        <input
-                                            type="checkbox"
-                                            checked={allSelected}
-                                            onChange={(event) => toggleGroup(group, event.target.checked)}
-                                        />
+                                        <input type="checkbox" checked={allSelected} onChange={(event) => toggleGroup(group, event.target.checked)} />
                                         {t('Select all')}
                                     </label>
                                     <div className="grid gap-3 sm:grid-cols-2">
@@ -213,9 +334,13 @@ export default function CommerceTypesIndex({ commerceTypes, permissionGroups }: 
                                                     className="mt-1"
                                                 />
                                                 <span>
-                                                    <span className="block font-medium">{t(permission.label)}</span>
+                                                    <span className="block font-medium">
+                                                        {translatePermissionText(permission.label, group.module, isSpanish)}
+                                                    </span>
                                                     {permission.description && (
-                                                        <span className="text-xs text-muted-foreground">{t(permission.description)}</span>
+                                                        <span className="text-muted-foreground text-xs">
+                                                            {translatePermissionText(permission.description, group.module, isSpanish)}
+                                                        </span>
                                                     )}
                                                 </span>
                                             </label>
@@ -224,7 +349,7 @@ export default function CommerceTypesIndex({ commerceTypes, permissionGroups }: 
                                 </fieldset>
                             );
                         })}
-                        {errors.permissions && <p className="text-sm text-destructive">{errors.permissions}</p>}
+                        {errors.permissions && <p className="text-destructive text-sm">{errors.permissions}</p>}
                     </div>
 
                     <div className="flex justify-end gap-2">

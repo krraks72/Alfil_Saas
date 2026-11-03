@@ -532,7 +532,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         // Processed Product Management routes
-        Route::middleware(['auth', 'permission:view-products'])->group(function () {
+        Route::middleware(['auth', 'permission:view-processed-products'])->group(function () {
             Route::get('/processed-products', [\App\Http\Controllers\ProcessedProductController::class, 'index'])->name('processed-products.index');
             Route::get('/processed-products/export', [\App\Http\Controllers\ProcessedProductController::class, 'export'])->name('processed-products.export')->middleware('permission:export-products');
             Route::get('/processed-products/create', [\App\Http\Controllers\ProcessedProductController::class, 'create'])->name('processed-products.create')->middleware('permission:create-products');
@@ -745,7 +745,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         // Branch Sales Target Management routes
-        Route::middleware(['auth', 'permission:manage_branch_sales_target'])->group(function () {
+        Route::middleware(['auth', 'permission:view_branch_sales_target|manage_branch_sales_target'])->group(function () {
             Route::get('/branch-sales-targets', [\App\Http\Controllers\BranchSalesTargetController::class, 'index'])->name('branch-sales-targets.index');
             Route::post('/branch-sales-targets', [\App\Http\Controllers\BranchSalesTargetController::class, 'store'])->name('branch-sales-targets.store')->middleware('permission:create_branch_sales_target');
             Route::put('/branch-sales-targets/{targetId}', [\App\Http\Controllers\BranchSalesTargetController::class, 'update'])->name('branch-sales-targets.update')->middleware('permission:edit_branch_sales_target');

@@ -35,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            'commerce_type_permission' => \App\Http\Middleware\CheckCommerceTypePermission::class,
             'landing.enabled' => \App\Http\Middleware\CheckLandingPageEnabled::class,
             // 'registration.enabled' => \App\Http\Middleware\CheckRegistrationEnabled::class,
             'verified' => App\Http\Middleware\EnsureEmailIsVerified::class,

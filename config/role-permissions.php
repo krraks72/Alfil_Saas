@@ -21,6 +21,7 @@ return [
         'users',
         'roles',
         'appointments',
+        'notification_templates',
         'branches',
         'cash_registers',
         'customers',

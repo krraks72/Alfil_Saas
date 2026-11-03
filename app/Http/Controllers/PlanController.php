@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Plan;
+use App\Models\CommerceType;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -20,7 +21,7 @@ class PlanController extends Controller
         // Admin view
         $billingCycle = $request->input('billing_cycle', 'monthly');
         
-        $dbPlans = Plan::all();
+        $dbPlans = Plan::with('commerceType')->get();
         $hasDefaultPlan = $dbPlans->where('is_default', true)->count() > 0;
         
         $plans = $dbPlans->map(function ($plan) use ($billingCycle) {
@@ -38,6 +39,7 @@ class PlanController extends Controller
             return [
                 'id' => $plan->id,
                 'name' => $plan->name,
+                'commerce_type' => $plan->commerceType?->name,
                 'price' => $price,
                 'yearly_price' => $plan->yearly_price, // Include yearly price for frontend reference
                 'formatted_price' => $formattedPrice,
@@ -100,7 +102,8 @@ class PlanController extends Controller
         $hasDefaultPlan = Plan::where('is_default', true)->exists();
         
         return Inertia::render('plans/create', [
-            'hasDefaultPlan' => $hasDefaultPlan
+            'hasDefaultPlan' => $hasDefaultPlan,
+            'commerceTypes' => CommerceType::orderBy('name')->get(['id', 'name']),
         ]);
     }
     
@@ -111,6 +114,7 @@ class PlanController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:plans',
+            'commerce_type_id' => 'required|exists:commerce_types,id',
             'price' => 'required|numeric|min:0',
             'yearly_price' => 'nullable|numeric|min:0',
             'duration' => 'required|string',
@@ -159,7 +163,8 @@ class PlanController extends Controller
             
         return Inertia::render('plans/edit', [
             'plan' => $plan,
-            'otherDefaultPlanExists' => $otherDefaultPlanExists
+            'otherDefaultPlanExists' => $otherDefaultPlanExists,
+            'commerceTypes' => CommerceType::orderBy('name')->get(['id', 'name']),
         ]);
     }
     
@@ -170,6 +175,7 @@ class PlanController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:plans,name,' . $plan->id,
+            'commerce_type_id' => 'required|exists:commerce_types,id',
             'price' => 'required|numeric|min:0',
             'yearly_price' => 'nullable|numeric|min:0',
             'duration' => 'required|string',
@@ -254,7 +260,7 @@ class PlanController extends Controller
         // Default to currentBillingCycle on first load so plan data matches the selected tab
         $billingCycle = $request->input('billing_cycle', $currentBillingCycle);
 
-        $dbPlans = Plan::where('is_plan_enable', 'on')->get();
+        $dbPlans = Plan::with('commerceType')->where('is_plan_enable', 'on')->get();
         
         $plans = $dbPlans->map(function ($plan) use ($billingCycle, $user, $currentBillingCycle) {
             // Get price and formatted price based on billing cycle
@@ -276,6 +282,7 @@ class PlanController extends Controller
             return [
                 'id' => $plan->id,
                 'name' => $plan->name,
+                'commerce_type' => $plan->commerceType?->name,
                 'price' => $price,
                 'yearly_price' => $plan->yearly_price, // Include yearly price for frontend reference
                 'formatted_price' => $formattedPrice,

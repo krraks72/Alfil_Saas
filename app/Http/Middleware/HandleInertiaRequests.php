@@ -217,9 +217,11 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'csrf_token' => csrf_token(),
             'auth'  => [
-                'user'        => $request->user() ? array_merge($request->user()->loadMissing(['plan'])->toArray()): null,
+                'user'        => $request->user() ? array_merge($request->user()->loadMissing(['plan.commerceType'])->toArray()): null,
                 'roles'       => fn() => $request->user()?->roles->pluck('name'),
-                'permissions' => fn() => $request->user()?->getAllPermissions()->pluck('name'),
+                'permissions' => fn() => $request->user()?->getAccessiblePermissions()->pluck('name'),
+                'commerce_type' => fn() => $request->user()?->getCommerceType()?->only(['id', 'name']),
+                'commerce_type_permissions' => fn() => $request->user()?->getCommerceType()?->permissions()->pluck('name') ?? [],
                 'avatar'      => fn() => check_file($request->user()?->avatar) ? get_file($request->user()?->avatar) : get_file('avatars/avatar.png'),
             ],
             'userLanguage' => config('app.is_demo') 

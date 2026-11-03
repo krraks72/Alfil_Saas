@@ -42,6 +42,12 @@ export function AppSidebar() {
             group: t('Management')
         },
         {
+            title: t('Commerce types'),
+            href: route('superadmin.commerce-types.index'),
+            icon: Building2,
+            group: t('Management')
+        },
+        {
             title: t('Media Library'),
             href: route('media-library'),
             icon: Image,
@@ -147,12 +153,14 @@ export function AppSidebar() {
         }
 
         // Calendar
-        items.push({
-            title: t('Calendar'),
-            href: route('calendar.index'),
-            icon: CalendarIcon,
-            group: t('Overview'),
-        });
+        if ((auth?.commerce_type_permissions || []).includes('view-appointments')) {
+            items.push({
+                title: t('Calendar'),
+                href: route('calendar.index'),
+                icon: CalendarIcon,
+                group: t('Overview'),
+            });
+        }
 
         // Notifications
         if (hasPermission(permissions, 'view-notifications')) {

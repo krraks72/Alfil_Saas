@@ -81,6 +81,8 @@ class RoleController extends BaseController
 
         // Filter permissions by allowed modules
         $query = Permission::whereIn('module', $allowedModules);
+        $commerceType = $user->getCommerceType();
+        $query->whereIn('id', $commerceType?->permissions()->pluck('permissions.id') ?? []);
 
         // For company users, filter specific settings permissions
         if ($userType === 'company') {
@@ -122,6 +124,8 @@ class RoleController extends BaseController
         // Build query to get valid permissions
         $query = Permission::whereIn('module', $allowedModules)
             ->whereIn('name', $permissionNames);
+        $commerceType = $user->getCommerceType();
+        $query->whereIn('id', $commerceType?->permissions()->pluck('permissions.id') ?? []);
 
         // For company users, restrict settings permissions to only email, system and brand settings
         if ($userType === 'company') {

@@ -43,6 +43,7 @@ import { PlanSubscriptionModal } from '@/components/plan-subscription-modal';
 interface Plan {
     id: number;
     name: string;
+    commerce_type?: string;
     price: string | number;
     formatted_price?: string;
     duration: string;
@@ -722,6 +723,11 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
                                     <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                                         {plan.name}
                                     </h3>
+                                    {plan.commerce_type && (
+                                        <p className="mb-2 text-sm text-muted-foreground">
+                                            {t('Commerce type')}: {plan.commerce_type}
+                                        </p>
+                                    )}
                                     <div className="mb-4">
                                         <div className="flex items-center justify-center">
                                             <span className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 font-mono">

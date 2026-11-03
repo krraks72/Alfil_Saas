@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Plan;
+use App\Models\CommerceType;
 use Illuminate\Database\Seeder;
 
 class PlanSeeder extends Seeder
@@ -12,6 +13,13 @@ class PlanSeeder extends Seeder
      */
     public function run(): void
     {
+        $defaultCommerceTypeId = CommerceType::where('name', 'Tienda')->value('id')
+            ?? CommerceType::query()->value('id');
+
+        if (! $defaultCommerceTypeId) {
+            throw new \RuntimeException('A commerce type must exist before seeding plans.');
+        }
+
         $freePlan = [
             'name' => 'Free',
             'price' => 0,
@@ -27,7 +35,8 @@ class PlanSeeder extends Seeder
             'trial_day' => 0,
             'is_plan_enable' => 'on',
             'is_default' => true,
-            'module' => null
+            'module' => null,
+            'commerce_type_id' => Plan::where('name', 'Free')->value('commerce_type_id') ?? $defaultCommerceTypeId,
         ];
         
         $paidPlans = [
@@ -46,7 +55,8 @@ class PlanSeeder extends Seeder
                 'trial_day' => 7,
                 'is_plan_enable' => 'on',
                 'is_default' => false,
-                'module' => null
+                'module' => null,
+                'commerce_type_id' => Plan::where('name', 'Starter')->value('commerce_type_id') ?? $defaultCommerceTypeId,
             ],
             [
                 'name' => 'Pro',
@@ -63,7 +73,8 @@ class PlanSeeder extends Seeder
                 'trial_day' => 14,
                 'is_plan_enable' => 'on',
                 'is_default' => false,
-                'module' => null
+                'module' => null,
+                'commerce_type_id' => Plan::where('name', 'Pro')->value('commerce_type_id') ?? $defaultCommerceTypeId,
             ],
             [
                 'name' => 'Enterprise',
@@ -80,7 +91,8 @@ class PlanSeeder extends Seeder
                 'trial_day' => 30,
                 'is_plan_enable' => 'on',
                 'is_default' => false,
-                'module' => null
+                'module' => null,
+                'commerce_type_id' => Plan::where('name', 'Enterprise')->value('commerce_type_id') ?? $defaultCommerceTypeId,
             ]
         ];
         

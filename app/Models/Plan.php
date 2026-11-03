@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Plan extends Model
 {
@@ -23,6 +24,7 @@ class Plan extends Model
         'is_plan_enable',
         'is_default',
         'module',
+        'commerce_type_id',
     ];
 
     protected $casts = [
@@ -128,5 +130,10 @@ class Plan extends Model
     public function users()
     {
         return $this->hasMany(User::class);
+    }
+
+    public function commerceType(): BelongsTo
+    {
+        return $this->belongsTo(CommerceType::class);
     }
 }

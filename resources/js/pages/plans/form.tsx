@@ -30,15 +30,17 @@ interface Plan {
   trial_day: number;
   is_plan_enable: string;
   is_default: boolean;
+  commerce_type_id: number | string;
 }
 
 interface Props {
   plan?: Plan;
+  commerceTypes: Array<{ id: number; name: string }>;
   hasDefaultPlan?: boolean;
   otherDefaultPlanExists?: boolean;
 }
 
-export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPlanExists = false }: Props) {
+export default function PlanForm({ plan, commerceTypes, hasDefaultPlan = false, otherDefaultPlanExists = false }: Props) {
   const { t } = useTranslation();
   const [processing, setProcessing] = useState(false);
 
@@ -46,6 +48,7 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
 
   const [formData, setFormData] = useState({
     name: plan?.name || '',
+    commerce_type_id: plan?.commerce_type_id || '',
     price: plan?.price || 0,
     yearly_price: plan?.yearly_price || undefined,
     duration: plan?.duration || 'monthly',
@@ -119,10 +122,11 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
       router.post(route('plans.store'), formData, {
         onSuccess: (page) => {
           toast.dismiss();
-          if (page.props.flash.success) {
-            toast.success(t(page.props.flash.success));
-          } else if (page.props.flash.error) {
-            toast.error(t(page.props.flash.error));
+          const flash = (page.props as { flash?: { success?: string; error?: string } }).flash;
+          if (flash?.success) {
+            toast.success(t(flash.success));
+          } else if (flash?.error) {
+            toast.error(t(flash.error));
           }
         },
         onError: (errors) => {
@@ -173,6 +177,23 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
                   placeholder='e.g. Basic, Professional, Enterprise'
                   required
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="commerce_type_id">{t("Commerce type")} <span className="text-red-500">*</span></Label>
+                <select
+                  id="commerce_type_id"
+                  name="commerce_type_id"
+                  value={formData.commerce_type_id}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">{t("Select a commerce type")}</option>
+                  {commerceTypes.map((commerceType) => (
+                    <option key={commerceType.id} value={commerceType.id}>{commerceType.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div>

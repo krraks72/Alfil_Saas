@@ -140,6 +140,14 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\SuperAdminMiddleware
             ->name('database-updates.index');
         Route::post('database-updates/run', [\App\Http\Controllers\DatabaseMigrationController::class, 'run'])
             ->name('database-updates.run');
+        Route::get('commerce-types', [\App\Http\Controllers\CommerceTypeController::class, 'index'])
+            ->name('commerce-types.index');
+        Route::post('commerce-types', [\App\Http\Controllers\CommerceTypeController::class, 'store'])
+            ->name('commerce-types.store');
+        Route::put('commerce-types/{commerceType}', [\App\Http\Controllers\CommerceTypeController::class, 'update'])
+            ->name('commerce-types.update');
+        Route::delete('commerce-types/{commerceType}', [\App\Http\Controllers\CommerceTypeController::class, 'destroy'])
+            ->name('commerce-types.destroy');
     });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -242,10 +250,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         })->name('media-library');
 
         // Calendar routes
-        Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');
-        Route::post('calendar/events', [CalendarController::class, 'store'])->name('calendar.events.store');
-        Route::put('calendar/events/{event}', [CalendarController::class, 'update'])->name('calendar.events.update');
-        Route::delete('calendar/events/{event}', [CalendarController::class, 'destroy'])->name('calendar.events.destroy');
+        Route::middleware('commerce_type_permission:view-appointments')->group(function () {
+            Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');
+            Route::post('calendar/events', [CalendarController::class, 'store'])->name('calendar.events.store');
+            Route::put('calendar/events/{event}', [CalendarController::class, 'update'])->name('calendar.events.update');
+            Route::delete('calendar/events/{event}', [CalendarController::class, 'destroy'])->name('calendar.events.destroy');
+        });
 
         // Google Calendar routes
         Route::post('api/google-calendar/sync', [\App\Http\Controllers\GoogleCalendarController::class, 'syncEvents'])->name('google-calendar.sync');

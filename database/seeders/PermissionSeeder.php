@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\CommerceType;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 
@@ -323,6 +324,9 @@ class PermissionSeeder extends Seeder
             ['name' => 'create_branch_sales_target', 'module' => 'branch_sales_targets', 'label' => 'Create Branch Sales Targets', 'description' => 'Can create branch sales targets'],
             ['name' => 'edit_branch_sales_target', 'module' => 'branch_sales_targets', 'label' => 'Edit Branch Sales Targets', 'description' => 'Can edit branch sales targets'],
             ['name' => 'delete_branch_sales_target', 'module' => 'branch_sales_targets', 'label' => 'Delete Branch Sales Targets', 'description' => 'Can delete branch sales targets'],
+
+            // Calendar access
+            ['name' => 'view-appointments', 'module' => 'appointments', 'label' => 'View Calendar', 'description' => 'Can view calendar events'],
         ];
 
         foreach ($permissions as $permission) {
@@ -348,5 +352,17 @@ class PermissionSeeder extends Seeder
             $perm->roles()->detach();
             $perm->delete();
         }
+
+        $defaultTypePermissionIds = Permission::where('guard_name', 'web')
+            ->whereIn('module', config('role-permissions.company', []))
+            ->pluck('id');
+
+        CommerceType::whereIn('name', ['Tienda', 'Gastrobar'])
+            ->where('permissions_initialized', false)
+            ->get()
+            ->each(function (CommerceType $commerceType) use ($defaultTypePermissionIds) {
+                $commerceType->permissions()->sync($defaultTypePermissionIds);
+                $commerceType->forceFill(['permissions_initialized' => true])->save();
+            });
     }
 }

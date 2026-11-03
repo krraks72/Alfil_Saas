@@ -13,11 +13,14 @@ use App\Models\PayoutRequest;
 use App\Services\MailConfigService;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Contracts\Permission as PermissionContract;
 
 class User extends BaseAuthenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasRoles, HasFactory, Notifiable, Impersonate;
+    use HasRoles, HasFactory, Notifiable, Impersonate {
+        hasPermissionTo as protected hasPermissionToFromRoles;
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -110,6 +113,85 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     public function isAdmin()
     {
         return $this->type === 'admin';
+    }
+
+    public function hasPermissionTo($permission, $guardName = null): bool
+    {
+        if (! $this->hasPermissionToFromRoles($permission, $guardName)) {
+            return false;
+        }
+
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        $permissionName = $this->permissionName($permission, $guardName);
+        $commerceType = $this->getCommerceType();
+
+        return $permissionName !== null
+            && $commerceType !== null
+            && $commerceType->permissions()->where('name', $permissionName)->exists();
+    }
+
+    public function getCommerceType(): ?CommerceType
+    {
+        $company = $this;
+
+        if ($this->type !== 'company') {
+            $companyId = getCompanyIdByUser($this->id);
+            if (! $companyId) {
+                return null;
+            }
+
+            $company = $companyId === $this->id
+                ? $this
+                : self::query()->with('plan.commerceType')->find($companyId);
+        }
+
+        if (! $company || $company->needsPlanSubscription()) {
+            return null;
+        }
+
+        $company->loadMissing('plan.commerceType');
+
+        return $company->plan?->commerceType;
+    }
+
+    public function getAccessiblePermissions()
+    {
+        $permissions = $this->getAllPermissions();
+
+        if ($this->isSuperAdmin()) {
+            return $permissions;
+        }
+
+        $commerceType = $this->getCommerceType();
+        if (! $commerceType) {
+            return collect();
+        }
+
+        $allowedIds = $commerceType->permissions()->pluck('permissions.id');
+
+        return $permissions->whereIn('id', $allowedIds)->values();
+    }
+
+    private function permissionName($permission, ?string $guardName): ?string
+    {
+        if ($permission instanceof \BackedEnum) {
+            $permission = $permission->value;
+        }
+
+        if ($permission instanceof PermissionContract) {
+            return $permission->name;
+        }
+
+        $permissionModel = is_int($permission)
+            ? \App\Models\Permission::query()
+                ->when($guardName, fn ($query) => $query->where('guard_name', $guardName))
+                ->find($permission)
+            : null;
+
+        return $permissionModel?->name ?? (is_string($permission) ? $permission : null);
     }
 
 

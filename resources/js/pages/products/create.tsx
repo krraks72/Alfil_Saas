@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SimpleMultiSelect } from '@/components/simple-multi-select';
 import MediaPicker from '@/components/MediaPicker';
 import { cn } from '@/lib/utils';
+import ALIADDO_COMMON_UNITS from '../../../data/aliaddo-common-units.json';
 
 const STEPS = [
   { id: 1, label: 'General Information' },
@@ -23,7 +24,7 @@ const STEPS = [
 
 const STEP_FIELDS: Record<number, string[]> = {
   1: ['name', 'sku', 'category_id', 'brand_id', 'description'],
-  2: ['unit_id', 'purchase_price', 'selling_price', 'stock_quantity', 'min_stock_level', 'tax_ids'],
+  2: ['unit_id', 'aliaddo_unit_measurement_code', 'purchase_price', 'selling_price', 'stock_quantity', 'min_stock_level', 'tax_ids'],
   3: ['image', 'status'],
 };
 
@@ -152,6 +153,7 @@ interface FormData {
   brand_id: string;
   description: string;
   unit_id: string;
+  aliaddo_unit_measurement_code: string;
   purchase_price: string;
   selling_price: string;
   stock_quantity: string;
@@ -174,7 +176,7 @@ export default function ProductCreate() {
 
   const [form, setForm] = useState<FormData>({
     name: '', sku: '', category_id: '', brand_id: '', description: '',
-    unit_id: '', purchase_price: '', selling_price: '', stock_quantity: '',
+    unit_id: '', aliaddo_unit_measurement_code: '', purchase_price: '', selling_price: '', stock_quantity: '',
     min_stock_level: '', tax_ids: [], image: '', status: 'active',
   });
 
@@ -437,6 +439,28 @@ export default function ProductCreate() {
                       ))}
                     </SelectContent>
                   </Select>
+                </Field>
+
+                <Field label={t('Aliaddo unit measurement code')} error={errors.aliaddo_unit_measurement_code}>
+                  <Select
+                    value={form.aliaddo_unit_measurement_code || 'none'}
+                    onValueChange={value => set('aliaddo_unit_measurement_code', value === 'none' ? '' : value)}
+                  >
+                    <SelectTrigger className={cn(errors.aliaddo_unit_measurement_code && 'border-red-400')}>
+                      <SelectValue placeholder={t('Select an Aliaddo unit')} />
+                    </SelectTrigger>
+                    <SelectContent searchable>
+                      <SelectItem value="none">{t('Not configured')}</SelectItem>
+                      {ALIADDO_COMMON_UNITS.map(unit => (
+                        <SelectItem key={unit.code} value={unit.code}>
+                          {t(unit.category)} - {unit.code} - {t(unit.name)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {t('Choose a common quantity, weight, or volume unit from Aliaddo. Required for Aliaddo invoicing.')}
+                  </p>
                 </Field>
 
                 <Field label={t('Purchase Price')} required error={errors.purchase_price}>

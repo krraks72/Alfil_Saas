@@ -118,8 +118,16 @@ class AliaddoInvoiceService
             throw new AliaddoInvoiceException('La venta no tiene una sucursal asociada.');
         }
 
+        if (blank($sale->branch->name) || blank($sale->branch->address)) {
+            throw new AliaddoInvoiceException('Completa el nombre y la dirección de la sucursal para facturar.');
+        }
+
         if ($sale->items->isEmpty()) {
             throw new AliaddoInvoiceException('La venta no tiene productos para facturar.');
+        }
+
+        if ($sale->items->count() > 100) {
+            throw new AliaddoInvoiceException('Aliaddo permite un máximo de 100 líneas por factura.');
         }
     }
 
@@ -155,15 +163,9 @@ class AliaddoInvoiceService
             'invoice_code',
             'type_operation',
             'mode',
-            'format',
             'prefix',
             'currency_code',
             'payment_mean_code',
-            'unit_measurement_code',
-            'unit_measurement_name',
-            'standard_type',
-            'standard_code',
-            'tax_code',
             'region_code',
             'region_name',
             'city_code',
@@ -174,13 +176,7 @@ class AliaddoInvoiceService
             'resolution_valid_until',
             'range_initial',
             'range_final',
-            'default_person_type',
-            'default_regime_type',
-            'default_identification_type_code',
-            'default_responsible_for',
-            'default_responsibilities',
             'country_code',
-            'country_name',
         ];
 
         foreach ($required as $key) {
@@ -198,16 +194,36 @@ class AliaddoInvoiceService
             throw new AliaddoNotConfiguredException('Configura el identificador de pruebas de Aliaddo.');
         }
 
+        if ($configuration['invoice_code'] === '02' && blank($configuration['incoterms'] ?? null)) {
+            throw new AliaddoNotConfiguredException('Configura un código INCOTERMS para emitir facturas de exportación.');
+        }
+
         $customer = $sale->customer;
         $date = $sale->sale_date->toDateString();
         $lineItems = [];
+        $unitCatalogPath = resource_path('data/aliaddo-common-units.json');
+        $unitCatalogContents = file_get_contents($unitCatalogPath);
+        if ($unitCatalogContents === false) {
+            throw new \RuntimeException("Unable to read Aliaddo unit catalog: {$unitCatalogPath}");
+        }
+        $unitCatalog = json_decode($unitCatalogContents, true, flags: JSON_THROW_ON_ERROR);
+        $unitNamesByCode = array_column($unitCatalog, 'name', 'code');
 
         foreach ($sale->items as $item) {
             $product = $item->product;
+            $unitCode = $product?->aliaddo_unit_measurement_code;
+            if (blank($unitCode) || ! isset($unitNamesByCode[$unitCode])) {
+                throw new AliaddoInvoiceException("Configura el código de unidad de medida Aliaddo en el producto {$item->product_name}.");
+            }
+
             $base = (float) $item->unit_price * (int) $item->quantity;
             $taxes = [];
 
             foreach ($product->taxes as $tax) {
+                if (blank($configuration['tax_code'] ?? null)) {
+                    throw new AliaddoNotConfiguredException('Configura el código de impuesto Aliaddo para los productos gravados.');
+                }
+
                 $amount = $tax->type === 'percentage'
                     ? $base * (float) $tax->rate / 100
                     : (float) $tax->rate * (int) $item->quantity;
@@ -222,37 +238,118 @@ class AliaddoInvoiceService
                 ];
             }
 
-            $lineItems[] = [
+            $line = [
                 'code' => $item->product_sku ?: (string) $item->product_id,
                 'name' => $item->product_name,
                 'modelName' => $product->name,
                 'description' => $product->description ?? $item->product_name,
-                'brandName' => $product->brand?->name ?? '',
-                'itemCodeSupplier' => $item->product_sku ?? '',
-                'unitMeasurementCode' => $configuration['unit_measurement_code'],
-                'unitMeasurementName' => $configuration['unit_measurement_name'],
+                'unitMeasurementCode' => $unitCode,
                 'price' => (float) $item->unit_price,
                 'quantity' => (int) $item->quantity,
-                'discountAmount' => (float) $item->discount_amount,
-                'chargeAmount' => 0,
-                'standardType' => $configuration['standard_type'],
-                'standardCode' => $configuration['standard_code'],
-                'taxes' => $taxes,
             ];
+
+            foreach ([
+                'brandName' => $product->brand?->name,
+                'itemCodeSupplier' => $item->product_sku,
+                'unitMeasurementName' => $unitNamesByCode[$unitCode],
+                'standardType' => $configuration['standard_type'] ?? null,
+                'standardCode' => $configuration['standard_code'] ?? null,
+            ] as $key => $value) {
+                if (filled($value)) {
+                    $line[$key] = $value;
+                }
+            }
+
+            if ((float) $item->discount_amount !== 0.0) {
+                $line['discountAmount'] = (float) $item->discount_amount;
+            }
+
+            if ($taxes !== []) {
+                $line['taxes'] = $taxes;
+            }
+
+            $lineItems[] = $line;
         }
 
         $billingAddress = [
             'address' => $customer->billing_address,
-            'countryName' => $customer->billing_country ?: $configuration['country_name'],
+            'countryName' => $customer->billing_country ?: ($configuration['country_name'] ?? null),
             'countryCode' => $configuration['country_code'],
             'regionName' => $customer->billing_state ?: $configuration['region_name'],
             'regionCode' => $customer->billing_region_code ?: $configuration['region_code'],
             'cityName' => $customer->billing_city ?: $configuration['city_name'],
             'cityCode' => $customer->billing_city_code ?: $configuration['city_code'],
             'postalCode' => $customer->billing_postal_code,
-            'phone' => $customer->phone ?? '',
+            'phone' => $customer->phone,
             'contactName' => $customer->name,
         ];
+
+        $shippingAddress = $customer->same_as_billing ? $billingAddress : [
+            'address' => $customer->shipping_address ?: $customer->billing_address,
+            'countryName' => $customer->shipping_country ?: $billingAddress['countryName'],
+            'countryCode' => $configuration['country_code'],
+            'regionName' => $customer->shipping_state ?: $billingAddress['regionName'],
+            'regionCode' => $customer->billing_region_code ?: $configuration['region_code'],
+            'cityName' => $customer->shipping_city ?: $billingAddress['cityName'],
+            'cityCode' => $customer->billing_city_code ?: $configuration['city_code'],
+            'postalCode' => $customer->shipping_postal_code ?: $customer->billing_postal_code,
+            'phone' => $customer->phone,
+            'contactName' => $customer->name,
+        ];
+
+        foreach ([
+            'address',
+            'countryName',
+            'countryCode',
+            'regionName',
+            'regionCode',
+            'cityName',
+            'cityCode',
+        ] as $key) {
+            if (blank($billingAddress[$key] ?? null)) {
+                throw new AliaddoInvoiceException("Completa el campo {$key} de la dirección de facturación del comprador.");
+            }
+        }
+
+        $customerDocument = [
+            'companyName' => $customer->name,
+            'personType' => (string) ($customer->person_type ?: ($configuration['default_person_type'] ?? '')),
+            'regimeType' => $customer->regime_type ?: ($configuration['default_regime_type'] ?? null),
+            'firstName' => $customer->first_name ?: $customer->name,
+            'lastName' => $customer->last_name,
+            'identification' => $customer->identification,
+            'digitCheck' => $customer->digit_check ?? '',
+            'identificationTypeCode' => $customer->identification_type_code ?: ($configuration['default_identification_type_code'] ?? null),
+            'responsibilities' => $customer->responsibilities ?: ($configuration['default_responsibilities'] ?? null),
+            'BillingAddress' => $billingAddress,
+            'ShippingAddress' => $shippingAddress,
+        ];
+
+        foreach ([
+            'email' => $customer->email,
+            'phone' => $customer->phone,
+            'responsibleFor' => $customer->responsible_for ?: ($configuration['default_responsible_for'] ?? null),
+            'economicActivities' => $customer->economic_activities,
+        ] as $key => $value) {
+            if (filled($value)) {
+                $customerDocument[$key] = $value;
+            }
+        }
+
+        foreach ([
+            'companyName',
+            'personType',
+            'regimeType',
+            'firstName',
+            'lastName',
+            'identification',
+            'identificationTypeCode',
+            'responsibilities',
+        ] as $key) {
+            if (blank($customerDocument[$key] ?? null)) {
+                throw new AliaddoInvoiceException("Completa el campo fiscal obligatorio del comprador en Aliaddo: {$key}.");
+            }
+        }
 
         $resolution = [
             'key' => $configuration['resolution_key'],
@@ -268,7 +365,6 @@ class AliaddoInvoiceService
             'code' => $configuration['invoice_code'],
             'typeOperation' => $configuration['type_operation'],
             'mode' => $configuration['mode'],
-            'format' => $configuration['format'],
             'prefix' => $configuration['prefix'],
             'consecutive' => $consecutive,
             'orderReference' => $sale->sale_number,
@@ -291,34 +387,7 @@ class AliaddoInvoiceService
                 'phone' => $sale->branch->phone ?? '',
             ],
             'resolution' => $resolution,
-            'customer' => [
-                'companyName' => $customer->name,
-                'firstName' => $customer->first_name ?: $customer->name,
-                'lastName' => $customer->last_name ?? '',
-                'personType' => $customer->person_type ?: $configuration['default_person_type'],
-                'regimeType' => $customer->regime_type ?: $configuration['default_regime_type'],
-                'identification' => $customer->identification,
-                'digitCheck' => $customer->digit_check ?? '',
-                'identificationTypeCode' => $customer->identification_type_code ?: $configuration['default_identification_type_code'],
-                'email' => $customer->email ?? '',
-                'phone' => $customer->phone ?? '',
-                'responsibleFor' => $customer->responsible_for ?: $configuration['default_responsible_for'],
-                'responsibilities' => $customer->responsibilities ?: $configuration['default_responsibilities'],
-                'economicActivities' => $customer->economic_activities ?? '',
-                'BillingAddress' => $billingAddress,
-                'ShippingAddress' => $customer->same_as_billing ? $billingAddress : [
-                    'address' => $customer->shipping_address ?: $customer->billing_address,
-                    'countryName' => $customer->shipping_country ?: $billingAddress['countryName'],
-                    'countryCode' => $configuration['country_code'],
-                    'regionName' => $customer->shipping_state ?: $billingAddress['regionName'],
-                    'regionCode' => $customer->billing_region_code ?: $configuration['region_code'],
-                    'cityName' => $customer->shipping_city ?: $billingAddress['cityName'],
-                    'cityCode' => $customer->billing_city_code ?: $configuration['city_code'],
-                    'postalCode' => $customer->shipping_postal_code ?: $customer->billing_postal_code,
-                    'phone' => $customer->phone ?? '',
-                    'contactName' => $customer->name,
-                ],
-            ],
+            'customer' => $customerDocument,
             'lines' => $lineItems,
             'totals' => [
                 'amount' => (float) $sale->subtotal,
@@ -329,6 +398,14 @@ class AliaddoInvoiceService
                 'chargesAmount' => 0,
             ],
         ];
+
+        if (filled($configuration['format'] ?? null)) {
+            $document['format'] = $configuration['format'];
+        }
+
+        if ($configuration['invoice_code'] === '02') {
+            $document['incoterms'] = $configuration['incoterms'];
+        }
 
         if ($configuration['mode'] === 'Test') {
             $document['testSetId'] = $configuration['test_set_id'];

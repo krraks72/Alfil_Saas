@@ -1,0 +1,16 @@
+[
+  { "code": "94", "name": "Unidad", "category": "quantity" },
+  { "code": "EA", "name": "cada", "category": "quantity" },
+  { "code": "C62", "name": "uno", "category": "quantity" },
+  { "code": "DZN", "name": "docena", "category": "quantity" },
+  { "code": "SET", "name": "conjunto", "category": "quantity" },
+  { "code": "KGM", "name": "kilogramo", "category": "weight" },
+  { "code": "GRM", "name": "gramo", "category": "weight" },
+  { "code": "TNE", "name": "tonelada (tonelada métrica)", "category": "weight" },
+  { "code": "LBR", "name": "libra", "category": "weight" },
+  { "code": "ONZ", "name": "onza", "category": "weight" },
+  { "code": "LTR", "name": "litro", "category": "volume" },
+  { "code": "MLT", "name": "mililitro", "category": "volume" },
+  { "code": "MTQ", "name": "Metro cúbico", "category": "volume" },
+  { "code": "GLL", "name": "galón", "category": "volume" }
+]

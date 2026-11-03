@@ -4,7 +4,9 @@ Para la configuración paso a paso, consulta la
 [guía de parametrización de Aliaddo](./guia-parametrizacion-aliaddo.md).
 
 La integración sigue los endpoints de Aliaddo/Orka descritos en
-[`facturación electronica.txt`](./facturación%20electronica.txt). Cada empresa
+[`Modulo predeterminado.html`](./Modulo%20predeterminado.html). El archivo
+[`facturación electronica.txt`](./facturación%20electronica.txt) conserva ejemplos
+de solicitudes. Cada empresa
 configura su cuenta y resolución en **Settings → Electronic Invoicing (Aliaddo)**.
 Al completar una venta POS, la aplicación genera y envía la factura con la venta,
 el comprador y sus productos.
@@ -17,6 +19,18 @@ prefijo y consecutivo, códigos de moneda/impuestos/unidad, ubicación de sucurs
 valores fiscales predeterminados del comprador y resolución DIAN. La URL de
 pruebas inicial es `https://orka.test.aliaddo.net`; configura la URL de producción
 proporcionada por Aliaddo antes de seleccionar `Production`.
+
+Los códigos de documento y los valores fiscales predeterminados del comprador
+se limitan a los enums del esquema publicado en el HTML. El esquema no declara
+valores predeterminados fiscales, así que esos campos empiezan vacíos. Los tipos
+de operación, formatos y estándares de producto se seleccionan de las listas
+documentadas. Moneda, medio de pago y unidad permanecen configurables porque la
+documentación consultada enlaza sus catálogos, pero no incluye sus valores en el
+esquema. La guía de parametrización contiene el detalle de códigos y requisitos.
+Para Colombia, moneda, código y nombre de país se inicializan como `COP`, `CO`
+y `Colombia`; pueden ajustarse según la operación de la empresa.
+El código de impuesto del POS se selecciona del catálogo `taxes` de Aliaddo;
+las retenciones tienen un catálogo distinto y no se configuran en ese campo.
 
 Cada ficha de cliente permite guardar identificación tributaria, tipo de persona,
 régimen, responsabilidades fiscales y códigos de ubicación DIAN. La factura
@@ -61,13 +75,13 @@ comprador. Las facturas ya emitidas no se duplican al reintentar.
   consulta por prefijo y consecutivo.
 
 El cuerpo de creación es el documento Aliaddo directamente, no un objeto
-envolvente. Debe contener `code`, `typeOperation`, `mode` (`Test` o
-`Production`), `format`, `prefix`, `consecutive`, `currencyCode`, `customer`,
-`lines` y `totals`. Los campos restantes del documento se reenvían sin
-transformación. La guía de parametrización incluye los campos requeridos del
-contrato `POST /v2/documents/invoices`, las estructuras de resolución, cliente y
-detalle, las diferencias entre el contrato del proveedor y las validaciones de
-Alfil SaaS, y un ejemplo con marcadores ficticios.
+envolvente. El HTML del proveedor marca `code`, `typeOperation` y `lines` como
+requeridos para `POST /v2/documents/invoices`; los esquemas reutilizables añaden
+requisitos para datos anidados. En el endpoint intermediario de Alfil SaaS,
+`format` y `prefix` son opcionales; la emisión automática del POS sí requiere un
+prefijo para administrar la numeración. Los campos restantes se reenvían sin
+transformación. La guía de parametrización distingue los requisitos del
+proveedor de los requisitos propios del POS.
 
 Las respuestas de Aliaddo conservan su código HTTP. La aplicación devuelve
 `503` si falta el token y `502` si no puede establecer conexión con el proveedor.

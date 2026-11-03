@@ -63,6 +63,22 @@ const spanishModuleLabels: Record<string, string> = {
     settings: 'Ajustes de la',
 };
 
+const settingsPermissionLabels: Record<string, string> = {
+    'manage-system-settings': 'System Settings',
+    'manage-brand-settings': 'Brand Settings',
+    'manage-currency-settings': 'Currency Settings',
+    'manage-email-settings': 'Email Settings',
+    'manage-email-notification-settings': 'Email Notification Settings',
+    'manage-slack-settings': 'Slack Settings',
+    'manage-twilio-settings': 'Twilio SMS Settings',
+    'manage-webhook-settings': 'Webhook Settings',
+    'manage-company-settings': 'Company Settings',
+    'manage-payment-settings': 'Payment Settings',
+    'manage-google-calendar-settings': 'Google Calendar Settings',
+    'manage-quotation-invoice-settings': 'Quotation Settings',
+    'manage-aliaddo-settings': 'Electronic Invoicing (Aliaddo)',
+};
+
 const spanishPermissionActions: Record<string, string> = {
     'Manage ': 'Administrar ',
     'View ': 'Ver ',
@@ -88,6 +104,34 @@ const spanishPermissionSubjects: Record<string, string> = {
     'Can view dashboard': 'Puede ver el panel de control',
     'Manage Settings': 'Administrar ajustes',
     'Can manage All settings': 'Puede administrar todos los ajustes',
+    'View Processed Products': 'Ver productos procesados',
+    'Can view processed products': 'Puede ver productos procesados',
+    'Manage System Settings': 'Administrar ajustes del sistema',
+    'Can manage system settings': 'Puede administrar los ajustes del sistema',
+    'Manage Email Settings': 'Administrar ajustes de correo',
+    'Can manage email settings': 'Puede administrar los ajustes de correo',
+    'Manage Email Notification Settings': 'Administrar notificaciones por correo',
+    'Can manage email notification settings': 'Puede administrar las notificaciones por correo',
+    'Manage Brand Settings': 'Administrar identidad visual',
+    'Can manage brand settings': 'Puede administrar la identidad visual',
+    'Manage Company Settings': 'Administrar datos de la empresa',
+    'Can manage Company settings': 'Puede administrar los datos de la empresa',
+    'Manage Payment Settings': 'Administrar ajustes de pago',
+    'Can manage payment settings': 'Puede administrar los ajustes de pago',
+    'Manage Currency Settings': 'Administrar ajustes de moneda',
+    'Can manage currency settings': 'Puede administrar los ajustes de moneda',
+    'Manage Slack Settings': 'Administrar ajustes de Slack',
+    'Can manage Slack settings': 'Puede administrar los ajustes de Slack',
+    'Manage Twilio Settings': 'Administrar ajustes de Twilio',
+    'Can manage Twilio settings': 'Puede administrar los ajustes de Twilio',
+    'Manage Webhook Settings': 'Administrar ajustes de webhooks',
+    'Can manage webhook settings': 'Puede administrar los ajustes de webhooks',
+    'Manage Google Calendar Settings': 'Administrar ajustes de Google Calendar',
+    'Can manage Google Calendar settings': 'Puede administrar los ajustes de Google Calendar',
+    'Manage Quotation Settings': 'Administrar ajustes de cotizaciones',
+    'Can manage quotation settings': 'Puede administrar los ajustes de cotizaciones',
+    'Manage Aliaddo Settings': 'Administrar ajustes de Aliaddo',
+    'Can manage Aliaddo settings': 'Puede administrar los ajustes de Aliaddo',
     'Manage Login History': 'Administrar el historial de inicio de sesión',
     'Can manage login history': 'Puede administrar el historial de inicio de sesión',
     'Show Login History': 'Ver el historial de inicio de sesión',
@@ -182,6 +226,11 @@ export default function CommerceTypesIndex({ commerceTypes, permissionGroups }: 
         description: '',
         permissions: [],
     });
+    const permissionErrors = [...new Set(
+        Object.entries(errors)
+            .filter(([field]) => field === 'permissions' || field.startsWith('permissions.'))
+            .map(([, message]) => message)
+    )];
 
     useEffect(() => {
         if (flash?.success) toast.success(flash.success);
@@ -335,7 +384,9 @@ export default function CommerceTypesIndex({ commerceTypes, permissionGroups }: 
                                                 />
                                                 <span>
                                                     <span className="block font-medium">
-                                                        {translatePermissionText(permission.label, group.module, isSpanish)}
+                                                        {settingsPermissionLabels[permission.name]
+                                                            ? t(settingsPermissionLabels[permission.name])
+                                                            : translatePermissionText(permission.label, group.module, isSpanish)}
                                                     </span>
                                                     {permission.description && (
                                                         <span className="text-muted-foreground text-xs">
@@ -349,7 +400,9 @@ export default function CommerceTypesIndex({ commerceTypes, permissionGroups }: 
                                 </fieldset>
                             );
                         })}
-                        {errors.permissions && <p className="text-destructive text-sm">{errors.permissions}</p>}
+                        {permissionErrors.map((message, index) => (
+                            <p key={index} className="text-destructive text-sm">{message}</p>
+                        ))}
                     </div>
 
                     <div className="flex justify-end gap-2">

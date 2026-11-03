@@ -29,22 +29,6 @@ class TranslationController extends BaseController
         Cookie::queue('app_language', $locale, 60 * 24 * 30); // 30 days
         Cookie::queue('app_direction', $layoutDirection, 60 * 24 * 30);
         
-        // For unauthenticated users on auth pages, use superadmin's language
-        if (!config('app.is_demo') && !auth()->check() && request()->is('login', 'register', 'password/*', 'email/*')) {
-            $superAdmin = User::where('type', 'superadmin')->first();
-            if ($superAdmin) {
-                $locale = $superAdmin->lang ?? 'en';
-                $path = resource_path("lang/{$locale}.json");
-                
-                if (!File::exists($path)) {
-                    $path = resource_path("lang/en.json");
-                    $locale = 'en';
-                }
-                
-                $layoutDirection = in_array($locale, ['ar', 'he']) ? 'rtl' : 'ltr';
-            }
-        }
-
         $translations = json_decode(File::get($path), true);
         
         return response()->json([

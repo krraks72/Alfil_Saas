@@ -767,10 +767,10 @@ require __DIR__ . '/auth.php';
 
 // Webhook routes
 Route::middleware(['auth', 'verified', 'plan.access'])->group(function () {
-    Route::get('settings/webhooks', [\App\Http\Controllers\WebhookController::class, 'index'])->name('settings.webhooks.index');
-    Route::post('settings/webhooks', [\App\Http\Controllers\WebhookController::class, 'store'])->name('settings.webhooks.store');
-    Route::put('settings/webhooks/{webhook}', [\App\Http\Controllers\WebhookController::class, 'update'])->name('settings.webhooks.update');
-    Route::delete('settings/webhooks/{webhook}', [\App\Http\Controllers\WebhookController::class, 'destroy'])->name('settings.webhooks.destroy');
+    Route::get('settings/webhooks', [\App\Http\Controllers\WebhookController::class, 'index'])->name('settings.webhooks.index')->middleware('permission:manage-webhook-settings');
+    Route::post('settings/webhooks', [\App\Http\Controllers\WebhookController::class, 'store'])->name('settings.webhooks.store')->middleware('permission:manage-webhook-settings');
+    Route::put('settings/webhooks/{webhook}', [\App\Http\Controllers\WebhookController::class, 'update'])->name('settings.webhooks.update')->middleware('permission:manage-webhook-settings');
+    Route::delete('settings/webhooks/{webhook}', [\App\Http\Controllers\WebhookController::class, 'destroy'])->name('settings.webhooks.destroy')->middleware('permission:manage-webhook-settings');
 });
 
 Route::match(['GET', 'POST'], 'payments/easebuzz/success', [EasebuzzPaymentController::class, 'success'])->name('easebuzz.success');

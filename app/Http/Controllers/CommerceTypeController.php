@@ -11,7 +11,21 @@ use Illuminate\Validation\ValidationException;
 
 class CommerceTypeController extends Controller
 {
-    private const EXTRA_COMMERCE_TYPE_PERMISSIONS = ['manage-settings'];
+    private const EXTRA_COMMERCE_TYPE_PERMISSIONS = [
+        'manage-system-settings',
+        'manage-email-settings',
+        'manage-email-notification-settings',
+        'manage-brand-settings',
+        'manage-company-settings',
+        'manage-payment-settings',
+        'manage-currency-settings',
+        'manage-slack-settings',
+        'manage-twilio-settings',
+        'manage-webhook-settings',
+        'manage-google-calendar-settings',
+        'manage-quotation-invoice-settings',
+        'manage-aliaddo-settings',
+    ];
 
     public function index()
     {
@@ -97,6 +111,22 @@ class CommerceTypeController extends Controller
 
     private function validateCommerceType(Request $request, ?CommerceType $commerceType = null): array
     {
+        $allowedPermissionIds = Permission::query()
+            ->where('guard_name', 'web')
+            ->where(function ($query) {
+                $query->whereIn('module', config('role-permissions.company', []))
+                    ->orWhereIn('name', self::EXTRA_COMMERCE_TYPE_PERMISSIONS);
+            })
+            ->pluck('id')
+            ->all();
+
+        if ($commerceType) {
+            $allowedPermissionIds = array_merge(
+                $allowedPermissionIds,
+                $commerceType->permissions()->pluck('permissions.id')->all()
+            );
+        }
+
         $validated = $request->validate([
             'name' => [
                 'required',
@@ -106,14 +136,7 @@ class CommerceTypeController extends Controller
             ],
             'description' => ['nullable', 'string', 'max:1000'],
             'permissions' => ['present', 'array'],
-            'permissions.*' => ['integer', Rule::exists('permissions', 'id')->where(
-                fn ($query) => $query
-                    ->where('guard_name', 'web')
-                    ->where(function ($query) {
-                        $query->whereIn('module', config('role-permissions.company', []))
-                            ->orWhereIn('name', self::EXTRA_COMMERCE_TYPE_PERMISSIONS);
-                    })
-            )],
+            'permissions.*' => ['integer', Rule::in($allowedPermissionIds)],
         ]);
 
         $requestedPermissions = array_unique($validated['permissions']);

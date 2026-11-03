@@ -95,6 +95,7 @@ const isSuperAdmin = isAuthenticated && (hasRole('superadmin', userRoles) || use
                 if (typeof localStorage !== 'undefined') {
                     localStorage.setItem('app_language_preference', languageCode);
                 }
+                setCookie('app_language', languageCode);
 
                 await i18n.changeLanguage(languageCode);
 

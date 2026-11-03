@@ -494,7 +494,23 @@ export function AppSidebar() {
         }
 
         // System
-        if (hasPermission(permissions, 'manage-settings')) {
+        const settingsPermissions = [
+            'manage-settings',
+            'manage-system-settings',
+            'manage-email-settings',
+            'manage-email-notification-settings',
+            'manage-brand-settings',
+            'manage-company-settings',
+            'manage-payment-settings',
+            'manage-currency-settings',
+            'manage-slack-settings',
+            'manage-twilio-settings',
+            'manage-webhook-settings',
+            'manage-google-calendar-settings',
+            'manage-quotation-invoice-settings',
+            'manage-aliaddo-settings',
+        ];
+        if (settingsPermissions.some((permission) => hasPermission(permissions, permission))) {
             items.push({
                 title: t('Settings'),
                 href: route('settings'),

@@ -3,6 +3,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import Backend from 'i18next-http-backend';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import { getCookie } from './utils/cookie-utils';
 
 // Make i18n instance available for direct imports
 export { default as i18next } from 'i18next';
@@ -28,7 +29,7 @@ const customBackend = {
         if (data.locale) {
           localStorage.setItem('i18nextLng', data.locale);
           // Also store in a session cookie for server-side awareness
-          document.cookie = `app_language=${data.locale}; path=/; max-age=${60 * 60 * 24}`;
+          document.cookie = `app_language=${data.locale}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
         }
         
         callback(null, translations);
@@ -44,6 +45,11 @@ const getInitialLanguage = () => {
   const savedPreference = window.localStorage?.getItem('app_language_preference');
   if (savedPreference) {
     return savedPreference;
+  }
+
+  const cookiePreference = getCookie('app_language');
+  if (cookiePreference) {
+    return cookiePreference;
   }
 
   // First priority: Get from server-provided userLanguage

@@ -34,7 +34,6 @@ import AliaddoSettings from './components/aliaddo-settings';
 
 import { Toaster } from '@/components/ui/toaster';
 import { useTranslation } from 'react-i18next';
-import { hasPermission } from '@/utils/permissions';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -45,6 +44,8 @@ export default function Settings() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { position } = useLayout();
   const isCompanyUser = auth.user?.type === 'company';
+  const isSuperAdmin = ['superadmin', 'super admin'].includes(auth.user?.type);
+  const hasSettingsPermission = (permission: string) => auth.permissions?.includes(permission) ?? false;
 
   // Define all possible sidebar navigation items
   const allSidebarNavItems: (NavItem & { permission?: string })[] = [
@@ -76,23 +77,26 @@ export default function Settings() {
       title: t('Email Notification Settings'),
       href: '#email-notification-settings',
       icon: <Bell className="h-4 w-4 mr-2" />,
-      permission: 'manage-email-settings'
+      permission: 'manage-email-notification-settings'
     },
     {
       title: t('Slack Settings'),
       href: '#slack-settings',
-      icon: <Slack className="h-4 w-4 mr-2" />
+      icon: <Slack className="h-4 w-4 mr-2" />,
+      permission: 'manage-slack-settings'
     },
 
     {
       title: t('Twilio SMS Settings'),
       href: '#twilio-settings',
-      icon: <MessageSquare className="h-4 w-4 mr-2" />
+      icon: <MessageSquare className="h-4 w-4 mr-2" />,
+      permission: 'manage-twilio-settings'
     },
     {
       title: t('Webhook Settings'),
       href: '#webhook-settings',
-      icon: <Webhook className="h-4 w-4 mr-2" />
+      icon: <Webhook className="h-4 w-4 mr-2" />,
+      permission: 'manage-webhook-settings'
     },
 
     {
@@ -147,7 +151,8 @@ export default function Settings() {
     {
       title: t('Google Calendar Settings'),
       href: '#google-calendar-settings',
-      icon: <Calendar className="h-4 w-4 mr-2" />
+      icon: <Calendar className="h-4 w-4 mr-2" />,
+      permission: 'manage-google-calendar-settings'
     },
     // {
     //   title: t('Sales Invoice Settings'),
@@ -157,106 +162,46 @@ export default function Settings() {
     {
       title: t('Quotation Settings'),
       href: '#quotation-invoice-settings',
-      icon: <FileText className="h-4 w-4 mr-2" />
+      icon: <FileText className="h-4 w-4 mr-2" />,
+      permission: 'manage-quotation-invoice-settings'
     },
     {
       title: t('Electronic Invoicing (Aliaddo)'),
       href: '#aliaddo-settings',
-      icon: <FileText className="h-4 w-4 mr-2" />
+      icon: <FileText className="h-4 w-4 mr-2" />,
+      permission: 'manage-aliaddo-settings'
     },
 
 
   ];
 
 
-  // Filter sidebar items based on user permissions
-  const sidebarNavItems = allSidebarNavItems.filter(item => {
-    if (item.href === '#aliaddo-settings') {
-      return isCompanyUser;
-    }
+  const companyOnlySettings = new Set([
+    '#company-settings',
+    '#email-notification-settings',
+    '#slack-settings',
+    '#twilio-settings',
+    '#webhook-settings',
+    '#google-calendar-settings',
+    '#quotation-invoice-settings',
+    '#aliaddo-settings',
+  ]);
+  const superAdminOnlySettings = new Set([
+    '#storage-settings',
+    '#recaptcha-settings',
+    '#chatgpt-settings',
+    '#cookie-settings',
+    '#seo-settings',
+    '#cache-settings',
+  ]);
 
-    // Hide company settings from super admin
-    if (item.permission === 'manage-company-settings' && auth.user?.type === 'superadmin') {
-      return false;
-    }
-    // Hide Email Notification Settings from super admin
-    if (item.href === '#email-notification-settings' && auth.user?.type === 'superadmin') {
-      return false;
-    }
-    // Hide webhook Settings from super admin
-    if (item.href === '#webhook-settings' && auth.user?.type === 'superadmin') {
-      return false;
-    }
-    // Hide Slack Settings from super admin
-    if (item.href === '#slack-settings' && auth.user?.type === 'superadmin') {
-      return false;
-    }
-    // Hide Twilio Settings from super admin
-    if (item.href === '#twilio-settings' && auth.user?.type === 'superadmin') {
-      return false;
-    }
-    // Hide Google Calendar Settings from superadmin
-    if (item.href === '#google-calendar-settings' && auth.user?.type === 'superadmin') {
-      return false;
-    }
-    // Hide Quotation Settings from superadmin
-    if (item.href === '#quotation-invoice-settings' && auth.user?.type === 'superadmin') {
-      return false;
-    }
-    // Show Google Calendar Settings for company users only
-    if (item.href === '#google-calendar-settings' && auth.user?.type === 'company') {
-      return true;
-    }
-    // Show Quotation Settings for company users only
-    if (item.href === '#quotation-invoice-settings' && auth.user?.type === 'company') {
-      return true;
-    }
-    if (item.href === '#aliaddo-settings' && auth.user?.type === 'company') {
-      return true;
-    }
-    // Hide Storage Settings from company users
-    if (auth.user?.type === 'company' && item.href === '#storage-settings') {
-      return false;
-    }
-    // If no permission is required or user has the permission (but not for superadmin with restricted items)
-    if (!item.permission || (auth.permissions && auth.permissions.includes(item.permission))) {
-      return true;
-    }
-    // For company users, only show specific settings
-    if (auth.user && auth.user.type === 'company') {
-      // Show Slack settings for all company users (no permission required)
-      if (item.href === '#slack-settings') {
-        return true;
-      }
-      // Show Twilio settings for all company users (no permission required)
-      if (item.href === '#twilio-settings') {
-        return true;
-      }
-      // Show Webhook settings for all company users (no permission required)
-      if (item.href === '#webhook-settings') {
-        return true;
-      }
-      // Show Google Calendar settings for all company users (no permission required)
-      if (item.href === '#google-calendar-settings') {
-        return true;
-      }
-      // Show Purchase Invoice settings for all company users (no permission required)
-      //   if (item.href === '#purchase-invoice-settings') {
-      //     return true;
-      //   }
-      //   // Show Sales Invoice settings for all company users (no permission required)
-      //   if (item.href === '#sales-invoice-settings') {
-      //     return true;
-      //   }
-      // Show Quotation Invoice settings for all company users (no permission required)
-      if (item.href === '#quotation-invoice-settings') {
-        return true;
-      }
-      // Only allow system settings, currency settings, email settings, company settings, and brand settings
-      return ['manage-system-settings', 'manage-currency-settings', 'manage-email-settings', 'manage-company-settings', 'manage-brand-settings'].includes(item.permission);
-    }
-    return false;
+  const sidebarNavItems = allSidebarNavItems.filter(item => {
+    if (!item.permission || !hasSettingsPermission(item.permission)) return false;
+    if (companyOnlySettings.has(item.href ?? '')) return isCompanyUser;
+    if (superAdminOnlySettings.has(item.href ?? '')) return isSuperAdmin;
+    return true;
   });
+  const hasVisibleSettings = sidebarNavItems.length > 0;
 
   // Refs for each section
   const systemSettingsRef = useRef<HTMLDivElement>(null);
@@ -460,8 +405,13 @@ export default function Settings() {
 
           {/* Main Content */}
           <div className="flex-1 w-full min-w-0">
+            {!hasVisibleSettings && isCompanyUser && (
+              <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+                {t('No settings sections are enabled for this commerce type. Ask your superadmin to enable the sections you need.')}
+              </div>
+            )}
             {/* System Settings Section */}
-            {(auth.permissions?.includes('manage-system-settings') || auth.user?.type === 'superadmin' || auth.user?.type === 'company') && (
+            {(hasSettingsPermission('manage-system-settings') || isSuperAdmin) && (
               <section id="system-settings" ref={systemSettingsRef} className="mb-8">
                 <SystemSettings
                   settings={systemSettings}
@@ -474,7 +424,7 @@ export default function Settings() {
             )}
 
             {/* Brand Settings Section */}
-            {(auth.permissions?.includes('manage-brand-settings') || auth.user?.type === 'superadmin') && (
+            {(hasSettingsPermission('manage-brand-settings') || isSuperAdmin) && (
               <section id="brand-settings" ref={brandSettingsRef} className="mb-8">
                 <BrandSettings />
               </section>
@@ -483,42 +433,42 @@ export default function Settings() {
 
 
             {/* Currency Settings Section */}
-            {(auth.permissions?.includes('manage-currency-settings') || auth.user?.type === 'superadmin' || auth.user?.type === 'company') && (
+            {(hasSettingsPermission('manage-currency-settings') || isSuperAdmin) && (
               <section id="currency-settings" ref={currencySettingsRef} className="mb-8">
                 <CurrencySettings />
               </section>
             )}
 
             {/* Email Settings Section */}
-            {(auth.permissions?.includes('manage-email-settings') || auth.user?.type === 'superadmin') && (
+            {(hasSettingsPermission('manage-email-settings') || isSuperAdmin) && (
               <section id="email-settings" ref={emailSettingsRef} className="mb-8">
                 <EmailSettings />
               </section>
             )}
 
             {/* Email Notification Settings Section */}
-            {(auth.permissions?.includes('manage-email-settings') && auth.user?.type === 'company') && (
+            {(hasSettingsPermission('manage-email-notification-settings') && isCompanyUser) && (
               <section id="email-notification-settings" ref={emailNotificationSettingsRef} className="mb-8">
                 <EmailNotificationSettings />
               </section>
             )}
 
             {/* Slack Settings Section */}
-            {(auth.user?.type === 'company') && (
+            {(hasSettingsPermission('manage-slack-settings') && isCompanyUser) && (
               <section id="slack-settings" ref={slackSettingsRef} className="mb-8">
                 <SlackSettings />
               </section>
             )}
 
             {/* Twilio SMS Settings Section */}
-            {(auth.user?.type === 'company') && (
+            {(hasSettingsPermission('manage-twilio-settings') && isCompanyUser) && (
               <section id="twilio-settings" ref={twilioSettingsRef} className="mb-8">
                 <TwilioSettings />
               </section>
             )}
 
             {/* Webhook Settings Section */}
-            {(auth.user?.type === 'company') && (
+            {(hasSettingsPermission('manage-webhook-settings') && isCompanyUser) && (
               <section id="webhook-settings" ref={webhookSettingsRef} className="mb-8">
                 <WebhookSettings />
               </section>
@@ -527,42 +477,42 @@ export default function Settings() {
 
 
             {/* Company Settings Section */}
-            {(auth.permissions?.includes('manage-company-settings') && auth.user?.type === 'company') && (
+            {(hasSettingsPermission('manage-company-settings') && isCompanyUser) && (
               <section id="company-settings" ref={companySettingsRef} className="mb-8">
                 <CompanySettings settings={systemSettings} />
               </section>
             )}
 
             {/* Payment Settings Section */}
-            {(auth.permissions?.includes('manage-payment-settings') || auth.user?.type === 'superadmin') && (
+            {(hasSettingsPermission('manage-payment-settings') || isSuperAdmin) && (
               <section id="payment-settings" ref={paymentSettingsRef} className="mb-8">
                 <PaymentSettings settings={paymentSettings} />
               </section>
             )}
 
             {/* Storage Settings Section */}
-            {(auth.permissions?.includes('manage-settings') && auth.user?.type === 'superadmin') && (
+            {isSuperAdmin && hasSettingsPermission('manage-storage-settings') && (
               <section id="storage-settings" ref={storageSettingsRef} className="mb-8">
                 <StorageSettings settings={systemSettings} />
               </section>
             )}
 
             {/* ReCaptcha Settings Section */}
-            {(auth.permissions?.includes('manage-recaptcha-settings') || auth.user?.type === 'superadmin') && (
+            {(hasSettingsPermission('manage-recaptcha-settings') || isSuperAdmin) && (
               <section id="recaptcha-settings" ref={recaptchaSettingsRef} className="mb-8">
                 <RecaptchaSettings settings={systemSettings} />
               </section>
             )}
 
             {/* Chat GPT Settings Section */}
-            {(auth.permissions?.includes('manage-chatgpt-settings') || auth.user?.type === 'superadmin') && (
+            {(hasSettingsPermission('manage-chatgpt-settings') || isSuperAdmin) && (
               <section id="chatgpt-settings" ref={chatgptSettingsRef} className="mb-8">
                 <ChatGptSettings settings={systemSettings} />
               </section>
             )}
 
             {/* Cookie Settings Section */}
-            {(auth.permissions?.includes('manage-cookie-settings') || auth.user?.type === 'superadmin') && (
+            {(hasSettingsPermission('manage-cookie-settings') || isSuperAdmin) && (
               <section id="cookie-settings" ref={cookieSettingsRef} className="mb-8">
                 <CookieSettings settings={systemSettings} />
               </section>
@@ -571,21 +521,21 @@ export default function Settings() {
 
 
             {/* SEO Settings Section */}
-            {(auth.permissions?.includes('manage-seo-settings') || auth.user?.type === 'superadmin') && (
+            {(hasSettingsPermission('manage-seo-settings') || isSuperAdmin) && (
               <section id="seo-settings" ref={seoSettingsRef} className="mb-8">
                 <SeoSettings settings={systemSettings} />
               </section>
             )}
 
             {/* Cache Settings Section */}
-            {(auth.permissions?.includes('manage-cache-settings') || auth.user?.type === 'superadmin') && (
+            {(hasSettingsPermission('manage-cache-settings') || isSuperAdmin) && (
               <section id="cache-settings" ref={cacheSettingsRef} className="mb-8">
                 <CacheSettings cacheSize={cacheSize} />
               </section>
             )}
 
             {/* Google Calendar Settings Section */}
-            {(auth.user?.type === 'company') && (
+            {(hasSettingsPermission('manage-google-calendar-settings') && isCompanyUser) && (
               <section id="google-calendar-settings" ref={googleCalendarSettingsRef} className="mb-8">
                 <GoogleCalendarSettings settings={systemSettings} />
               </section>
@@ -606,12 +556,12 @@ export default function Settings() {
           )} */}
 
             {/* Quotation Invoice Settings Section */}
-            {(auth.user?.type === 'company') && (
+            {(hasSettingsPermission('manage-quotation-invoice-settings') && isCompanyUser) && (
               <section id="quotation-invoice-settings" ref={quotationInvoiceSettingsRef} className="mb-8">
                 <QuotationInvoiceSettings settings={systemSettings} />
               </section>
             )}
-            {isCompanyUser && (
+            {hasSettingsPermission('manage-aliaddo-settings') && isCompanyUser && (
               <section id="aliaddo-settings" ref={aliaddoSettingsRef} className="mb-8">
                 <AliaddoSettings settings={aliaddoSettings} />
               </section>

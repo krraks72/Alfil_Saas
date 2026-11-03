@@ -5,9 +5,11 @@ use App\Http\Middleware\CheckPlanAccess;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\CommerceType;
 use App\Models\Plan;
+use App\Models\Setting;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\PlanSeeder;
+use Database\Seeders\RoleSeeder;
 use Spatie\Permission\Models\Permission;
 
 beforeEach(function () {
@@ -77,8 +79,9 @@ test('calendar routes are denied when the commerce type does not allow the calen
 test('processed products require their own commerce type permission', function () {
     $this->withoutMiddleware(CheckInstallation::class);
     app(PermissionSeeder::class)->run();
+    app(RoleSeeder::class)->run();
     $permission = Permission::findByName('view-processed-products', 'web');
-    $this->company->givePermissionTo($permission);
+    $this->company->assignRole('company');
 
     $this->actingAs($this->company)
         ->get(route('processed-products.index'))
@@ -88,6 +91,25 @@ test('processed products require their own commerce type permission', function (
 
     $this->actingAs($this->company)
         ->get(route('processed-products.index'))
+        ->assertOk();
+});
+
+test('company role settings permissions require the matching commerce type option', function () {
+    $this->withoutMiddleware([CheckInstallation::class, CheckPlanAccess::class, HandleInertiaRequests::class]);
+    app(PermissionSeeder::class)->run();
+    app(RoleSeeder::class)->run();
+    $this->company->assignRole('company');
+    $permission = Permission::findByName('manage-system-settings', 'web');
+
+    expect($this->company->hasPermissionTo($permission))->toBeFalse();
+
+    $this->commerceType->permissions()->sync([$permission->id]);
+
+    expect($this->company->fresh()->hasPermissionTo($permission))->toBeTrue();
+
+    $this->actingAs($this->company)
+        ->withHeader('X-Inertia', 'true')
+        ->get(route('settings'))
         ->assertOk();
 });
 
@@ -156,7 +178,24 @@ test('only superadmins can open the commerce type administration panel', functio
                         )
                 ) && $groups->contains(
                     fn ($group) => $group['module'] === 'settings'
-                        && collect($group['permissions'])->pluck('name')->all() === ['manage-settings']
+                        && collect([
+                            'manage-system-settings' => 'System Settings',
+                            'manage-email-settings' => 'Email Settings',
+                            'manage-email-notification-settings' => 'Email Notification Settings',
+                            'manage-brand-settings' => 'Brand Settings',
+                            'manage-company-settings' => 'Company Settings',
+                            'manage-payment-settings' => 'Payment Settings',
+                            'manage-currency-settings' => 'Currency Settings',
+                            'manage-slack-settings' => 'Slack Settings',
+                            'manage-twilio-settings' => 'Twilio SMS Settings',
+                            'manage-webhook-settings' => 'Webhook Settings',
+                            'manage-google-calendar-settings' => 'Google Calendar Settings',
+                            'manage-quotation-invoice-settings' => 'Quotation Settings',
+                            'manage-aliaddo-settings' => 'Electronic Invoicing (Aliaddo)',
+                        ])->every(
+                            fn ($label, $permissionName) => collect($group['permissions'])
+                                ->contains(fn ($permission) => $permission['name'] === $permissionName && $permission['label'] === $label)
+                        )
                 );
             }));
 });
@@ -165,7 +204,7 @@ test('superadmins can configure commerce type permissions', function () {
     app(PermissionSeeder::class)->run();
     $superadmin = User::factory()->create(['type' => 'superadmin']);
     $permission = Permission::findByName('view-appointments', 'web');
-    $settingsPermission = Permission::findByName('manage-settings', 'web');
+    $settingsPermission = Permission::findByName('manage-system-settings', 'web');
 
     $this->actingAs($superadmin)
         ->post(route('superadmin.commerce-types.store'), [
@@ -179,11 +218,11 @@ test('superadmins can configure commerce type permissions', function () {
     expect($commerceType->permissions()->whereKey($permission->id)->exists())->toBeTrue();
     expect($commerceType->permissions()->whereKey($settingsPermission->id)->exists())->toBeTrue();
 
-    $systemSettingsPermission = Permission::findByName('manage-system-settings', 'web');
+    $superAdminOnlyPermission = Permission::findByName('manage-storage-settings', 'web');
     $this->put(route('superadmin.commerce-types.update', $commerceType), [
         'name' => 'Restaurant',
         'description' => 'Updated restaurant',
-        'permissions' => [$systemSettingsPermission->id],
+        'permissions' => [$superAdminOnlyPermission->id],
     ])->assertSessionHasErrors('permissions.0');
 
     $this->put(route('superadmin.commerce-types.update', $commerceType), [
@@ -193,6 +232,108 @@ test('superadmins can configure commerce type permissions', function () {
     ])->assertRedirect(route('superadmin.commerce-types.index'));
 
     expect($commerceType->fresh()->permissions()->exists())->toBeFalse();
+});
+
+test('existing commerce types can be edited while retaining legacy assigned permissions', function () {
+    app(PermissionSeeder::class)->run();
+    $superadmin = User::factory()->create(['type' => 'superadmin']);
+    $legacyPermission = Permission::findByName('manage-settings', 'web');
+    $sectionPermission = Permission::findByName('manage-slack-settings', 'web');
+    $this->commerceType->permissions()->sync([$legacyPermission->id]);
+
+    $this->actingAs($superadmin)
+        ->put(route('superadmin.commerce-types.update', $this->commerceType), [
+            'name' => $this->commerceType->name,
+            'description' => 'Updated description',
+            'permissions' => [$legacyPermission->id, $sectionPermission->id],
+        ])
+        ->assertRedirect(route('superadmin.commerce-types.index'));
+
+    expect($this->commerceType->fresh()->permissions()->pluck('permissions.id')->all())
+        ->toContain($legacyPermission->id, $sectionPermission->id);
+});
+
+test('each company settings endpoint requires its own commerce type permission', function (
+    string $permissionName,
+    string $method,
+    string $routeName
+) {
+    $this->withoutMiddleware([CheckInstallation::class, CheckPlanAccess::class, HandleInertiaRequests::class]);
+    app(PermissionSeeder::class)->run();
+    $permission = Permission::findByName($permissionName, 'web');
+    $this->company->givePermissionTo($permission);
+
+    $this->actingAs($this->company)
+        ->call($method, route($routeName))
+        ->assertForbidden();
+
+    $this->commerceType->permissions()->sync([$permission->id]);
+
+    expect($this->actingAs($this->company)->call($method, route($routeName))->status())
+        ->not->toBe(403);
+})->with([
+    ['manage-system-settings', 'POST', 'settings.system.update'],
+    ['manage-brand-settings', 'POST', 'settings.brand.update'],
+    ['manage-currency-settings', 'POST', 'settings.currency.update'],
+    ['manage-email-settings', 'GET', 'settings.email.get'],
+    ['manage-email-notification-settings', 'POST', 'settings.email-notifications.update'],
+    ['manage-company-settings', 'POST', 'settings.company.update'],
+    ['manage-payment-settings', 'POST', 'payment.settings'],
+    ['manage-slack-settings', 'GET', 'settings.slack-config.get'],
+    ['manage-twilio-settings', 'GET', 'settings.twilio-notifications.get'],
+    ['manage-webhook-settings', 'GET', 'settings.webhooks.index'],
+    ['manage-google-calendar-settings', 'POST', 'settings.google-calendar.update'],
+    ['manage-quotation-invoice-settings', 'POST', 'settings.quotation-invoice.store'],
+    ['manage-aliaddo-settings', 'POST', 'settings.aliaddo.store'],
+]);
+
+test('legacy settings permission opens the page without granting access to individual sections', function () {
+    $this->withoutMiddleware([CheckInstallation::class, CheckPlanAccess::class, HandleInertiaRequests::class]);
+    app(PermissionSeeder::class)->run();
+    $this->actingAs($this->company)
+        ->get(route('settings'))
+        ->assertForbidden();
+
+    $genericPermission = Permission::findByName('manage-settings', 'web');
+    $this->company->givePermissionTo($genericPermission);
+    $this->commerceType->permissions()->sync([$genericPermission->id]);
+
+    $this->actingAs($this->company)
+        ->withHeader('X-Inertia', 'true')
+        ->get(route('settings'))
+        ->assertOk()
+        ->assertJsonPath('props.systemSettings', []);
+
+    $permission = Permission::findByName('manage-slack-settings', 'web');
+    $this->company->givePermissionTo($permission);
+    $this->commerceType->permissions()->sync([$permission->id]);
+
+    $this->actingAs($this->company)
+        ->get(route('settings'))
+        ->assertOk();
+});
+
+test('company settings page only shares values from permitted sections', function () {
+    $this->withoutMiddleware([CheckInstallation::class, CheckPlanAccess::class, HandleInertiaRequests::class]);
+    app(PermissionSeeder::class)->run();
+    $permission = Permission::findByName('manage-slack-settings', 'web');
+    $this->company->givePermissionTo($permission);
+    $this->commerceType->permissions()->sync([$permission->id]);
+
+    Setting::updateOrCreate(
+        ['user_id' => $this->company->id, 'key' => 'slack_enabled'],
+        ['value' => '1']
+    );
+    Setting::updateOrCreate(
+        ['user_id' => $this->company->id, 'key' => 'twilio_auth_token'],
+        ['value' => 'private-token']
+    );
+
+    $this->actingAs($this->company)
+        ->withHeader('X-Inertia', 'true')
+        ->get(route('settings'))
+        ->assertOk()
+        ->assertJsonPath('props.systemSettings', ['slack_enabled' => '1']);
 });
 
 test('default commerce types are initialized with company permissions during seeding', function () {
